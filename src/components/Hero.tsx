@@ -80,13 +80,13 @@ export function Hero({ onExploreRepo }: HeroProps) {
 
         <h1
           aria-label="Build in the open."
-          className="mt-7 text-[clamp(2.9rem,10.5vw,8rem)] font-semibold leading-[0.94] tracking-[-0.045em]"
+          className="mt-6 sm:mt-7 text-[clamp(2.35rem,8.6vw,7.5rem)] font-semibold leading-[0.96] tracking-[-0.045em]"
         >
           {HEADLINE.map((word, i) => (
             <span
               key={word}
               aria-hidden="true"
-              className="mr-[0.22em] inline-block overflow-hidden pb-[0.08em] align-bottom"
+              className="mr-[0.2em] inline-block overflow-hidden pb-[0.08em] align-bottom"
             >
               <motion.span
                 custom={i}
@@ -105,7 +105,7 @@ export function Hero({ onExploreRepo }: HeroProps) {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-7 max-w-lg text-pretty text-[1.02rem] leading-relaxed text-ash"
+          className="mt-6 sm:mt-7 max-w-lg text-pretty text-base sm:text-[1.02rem] leading-relaxed text-ash"
         >
           {SITE.name} is the open source hub of JIIT-128. Talks, workshops,
           dev-sprints and one-to-one sessions that take you from{" "}
@@ -117,7 +117,7 @@ export function Hero({ onExploreRepo }: HeroProps) {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.68, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-9 flex flex-wrap items-center gap-3"
+          className="mt-8 sm:mt-9 flex flex-wrap items-center gap-3"
         >
           <MagneticButton href="#contribute">
             Start contributing
@@ -133,16 +133,16 @@ export function Hero({ onExploreRepo }: HeroProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.95, duration: 0.9 }}
-          className="mt-16 grid max-w-2xl grid-cols-2 gap-x-6 gap-y-5 border-t border-white/10 pt-8 sm:grid-cols-3"
+          className="mt-12 sm:mt-16 grid grid-cols-1 xs:grid-cols-3 gap-5 sm:gap-6 border-t border-white/10 pt-8 max-w-2xl"
         >
           {[
             ["Contribute", "to live upstream projects"],
             ["Collaborate", "with people who review your code"],
             ["Mentor", "and get mentored, one-to-one"],
           ].map(([term, desc]) => (
-            <div key={term}>
-              <dt className="kicker text-flame">{term}</dt>
-              <dd className="mt-1 text-sm text-ash">{desc}</dd>
+            <div key={term} className="group/item">
+              <dt className="kicker text-flame transition-colors group-hover/item:text-flame-hot">{term}</dt>
+              <dd className="mt-1 text-xs sm:text-sm text-ash leading-relaxed">{desc}</dd>
             </div>
           ))}
         </motion.dl>

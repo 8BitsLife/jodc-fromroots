@@ -875,7 +875,7 @@ export const LEADERBOARD_REPOS: LeaderboardRepo[] = [
 ];
 
 export const SUBMISSION_DETAILS = {
-  formUrl: "https://forms.gle/qP7pM4C6w5oA9K148",
+  formUrl: "https://docs.google.com/forms/d/e/1FAIpQLSfaN2yTdH5qX6q5zY1VUkLhmwc7fRpOjF8Ph_CuGY8dSkd5Tw/viewform?usp=dialog",
   guidelines: [
     "Public repository hosted on GitHub, GitLab, or Codeberg.",
     "Clear and informative README explaining the project, problem solved, and setup instructions.",

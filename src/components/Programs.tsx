@@ -36,7 +36,7 @@ export function Programs() {
                 href={program.href}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="group grid gap-3 py-9 md:grid-cols-[1.15fr_1.45fr] md:gap-12"
+                className="group grid gap-3 py-7 sm:py-9 md:grid-cols-[1.15fr_1.45fr] md:gap-12 transition-all rounded-2xl px-3 sm:px-4 -mx-3 sm:-mx-4 hover:bg-white/[0.02] active:bg-white/[0.03] touch-manipulation cursor-pointer"
               >
                 <div>
                   <h3 className="flex items-baseline gap-3 text-[1.6rem] font-medium tracking-tight text-bone transition-colors duration-300 group-hover:text-flame sm:text-[2rem]">

@@ -39,6 +39,7 @@ export const NAV: NavItem[] = [
   { label: "What we do", href: "#what-we-do" },
   { label: "Contribute", href: "#contribute" },
   { label: "Programs", href: "#programs" },
+  { label: "Hackathon", href: "#hackathon" },
   { label: "Join", href: "#join" },
 ];
 

@@ -1,16 +1,6 @@
 # Reviews are requested automatically from the people listed here.
 # GitHub only honours usernames that have write access to this repository.
-#
-# The LAST matching pattern wins, so the catch-all goes first and the
-# narrower paths override it underneath.
+# This is a courtesy ping, not a gate: the branch ruleset does not require a
+# code-owner review, so any collaborator's approval can merge a PR.
 
-# Default: anything not matched below
-*                       @8BitsLife @simplyvardaan
-
-# Third-party / generated code, build config and CI: owner reviews these
-/src/components/ui/     @8BitsLife
-/src/lib/               @8BitsLife
-/.github/               @8BitsLife
-/vite.config.ts         @8BitsLife
-/package.json           @8BitsLife
-/package-lock.json      @8BitsLife
+*   @8BitsLife @simplyvardaan

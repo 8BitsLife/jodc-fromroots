@@ -95,7 +95,7 @@ export function Hero({ onExploreRepo }: HeroProps) {
                 variants={rise}
                 initial="hidden"
                 animate="visible"
-                className={`inline-block text-bone ${word === "open." ? "italic font-serif" : ""}`}
+                className={`inline-block ${word === "open." ? "accent" : "text-bone"}`}
               >
                 {word}
               </motion.span>

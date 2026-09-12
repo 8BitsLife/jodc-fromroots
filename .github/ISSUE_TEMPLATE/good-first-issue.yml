@@ -1,0 +1,46 @@
+name: Good first issue
+description: A small, self-contained task for someone making their first contribution
+labels: ["good first issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For maintainers filing work for newcomers. Keep it to one clear change
+        in one or two files. If it needs a design decision, it is not a good
+        first issue yet.
+
+  - type: textarea
+    id: task
+    attributes:
+      label: What needs doing
+      description: Describe the change as if the reader has never opened this repo.
+      placeholder: The Programs section lists the wrong application window for Outreachy.
+    validations:
+      required: true
+
+  - type: input
+    id: files
+    attributes:
+      label: Which file(s)
+      description: Most copy, links and lists live in src/data/site.ts and need no component changes.
+      placeholder: src/data/site.ts
+    validations:
+      required: true
+
+  - type: textarea
+    id: done
+    attributes:
+      label: How we know it is done
+      placeholder: |
+        - The section shows the correct dates
+        - npm run build still passes
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Screenshots, links, or context that saves the contributor a search.
+    validations:
+      required: false

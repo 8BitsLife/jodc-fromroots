@@ -1,0 +1,18 @@
+# Reviews are requested automatically from the people listed here.
+# GitHub only honours usernames that have write access to this repository.
+#
+# NOTE: replace @vardaan below with Vardaan's exact GitHub username.
+#
+# The LAST matching pattern wins, so the catch-all goes first and the
+# narrower paths override it underneath.
+
+# Default: anything not matched below
+*                       @8BitsLife @vardaan
+
+# Third-party / generated code, build config and CI: owner reviews these
+/src/components/ui/     @8BitsLife
+/src/lib/               @8BitsLife
+/.github/               @8BitsLife
+/vite.config.ts         @8BitsLife
+/package.json           @8BitsLife
+/package-lock.json      @8BitsLife

@@ -1,0 +1,45 @@
+name: Bug report
+description: Something on the site is broken or looks wrong
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      placeholder: The nav menu will not close after tapping a link.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce it
+      placeholder: |
+        1. Open the site on a phone
+        2. Tap the menu icon
+        3. Tap "Programs"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: proof
+    attributes:
+      label: Screenshot or screen recording
+      description: Drag the file straight into this box. For visual bugs this is the whole report.
+    validations:
+      required: false
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and browser
+      placeholder: iPhone 13, Safari / Windows 11, Chrome 131
+    validations:
+      required: true

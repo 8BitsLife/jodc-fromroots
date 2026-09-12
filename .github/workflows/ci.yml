@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A new push to the same branch cancels the run already in flight.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Typecheck and build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # ci, not install: installs exactly what package-lock.json pins
+      # and fails if the lockfile is out of sync with package.json.
+      - run: npm ci
+
+      # Reported separately from the build so a type error reads as a type
+      # error, not as a bundler failure.
+      - run: npm run typecheck
+
+      - run: npm run build

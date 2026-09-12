@@ -109,11 +109,11 @@ const SPONSORS: Sponsor[] = [
 ];
 
 export function SponsorsMarquee() {
-  const items = [...SPONSORS, ...SPONSORS];
+  const items = [...SPONSORS, ...SPONSORS, ...SPONSORS, ...SPONSORS];
 
   return (
-    <section className="relative overflow-hidden border-t border-white/[0.08] py-12">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8 mb-8">
+    <section className="w-full max-w-full relative overflow-hidden border-t border-white/[0.08] py-12">
+      <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
           <div>
             <span className="font-mono text-[11px] uppercase tracking-widest text-flame font-semibold block mb-1">
@@ -127,7 +127,7 @@ export function SponsorsMarquee() {
       </div>
 
       {/* High-Aesthetic Non-Link Marquee Track */}
-      <div className="relative flex w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+      <div className="relative flex w-full max-w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
         <div className="flex shrink-0 animate-marquee items-center gap-3.5 sm:gap-5 pr-5 hover:[animation-play-state:paused] active:[animation-play-state:paused]">
           {items.map((sponsor, idx) => (
             <div

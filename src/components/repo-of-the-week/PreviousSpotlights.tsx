@@ -58,7 +58,8 @@ export function PreviousSpotlights({
     const el = scrollContainerRef.current;
     if (!el) return;
 
-    const cardStep = 375;
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
+    const cardStep = isMobile ? 300 : 375;
     const scrollAmount = direction === "left" ? -cardStep : cardStep;
 
     el.scrollBy({
@@ -91,12 +92,14 @@ export function PreviousSpotlights({
   };
 
   return (
-    <section className="mt-20 pt-12 border-t border-white/[0.08] relative">
-      {/* Subtle ambient spotlight glow behind the archive */}
-      <div className="pointer-events-none absolute top-1/2 left-1/3 -translate-y-1/2 h-64 w-96 rounded-full bg-flame/5 blur-[120px]" />
+    <section className="w-full max-w-full overflow-hidden mt-20 pt-12 border-t border-white/[0.08] relative">
+      {/* Subtle ambient spotlight glow behind the archive - contained */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 max-w-full rounded-full bg-flame/5 blur-[100px]" />
+      </div>
 
       {/* Header with Title and Bidirectional Scroll Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+      <div className="w-full flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
         <div>
           <span className="font-mono text-[11px] uppercase tracking-widest text-flame font-semibold block mb-1">
             JODC REPO Archive
@@ -139,7 +142,7 @@ export function PreviousSpotlights({
       </div>
 
       {/* Horizontal Carousel Track with Edge Masks */}
-      <div className="relative group/carousel">
+      <div className="w-full max-w-full overflow-hidden relative group/carousel">
         {/* Left Edge Gradient Fade Mask */}
         <div
           className={`pointer-events-none absolute left-0 top-0 bottom-6 w-12 sm:w-16 bg-gradient-to-r from-ink via-ink/80 to-transparent z-10 transition-opacity duration-300 ${canScrollLeft ? "opacity-100" : "opacity-0"
@@ -155,11 +158,23 @@ export function PreviousSpotlights({
         {/* Smooth Scrollable Container */}
         <div
           ref={scrollContainerRef}
+          tabIndex={0}
+          role="region"
+          aria-label="Previous weekly releases carousel. Use left and right arrow keys to navigate."
+          onKeyDown={(e) => {
+            if (e.key === "ArrowLeft") {
+              e.preventDefault();
+              scroll("left");
+            } else if (e.key === "ArrowRight") {
+              e.preventDefault();
+              scroll("right");
+            }
+          }}
           onMouseDown={handleMouseDown}
           onMouseLeave={handleMouseLeaveOrUp}
           onMouseUp={handleMouseLeaveOrUp}
           onMouseMove={handleMouseMove}
-          className="no-scrollbar flex gap-3.5 sm:gap-5 overflow-x-auto pb-6 pt-2 scroll-smooth snap-x snap-mandatory cursor-grab active:cursor-grabbing select-none touch-pan-x [-webkit-overflow-scrolling:touch]"
+          className="w-full max-w-full min-w-0 no-scrollbar flex gap-3.5 sm:gap-5 overflow-x-auto pb-6 pt-2 scroll-smooth snap-x snap-mandatory cursor-grab active:cursor-grabbing select-none touch-pan-x [-webkit-overflow-scrolling:touch] focus-visible:ring-1 focus-visible:ring-flame/50 focus-visible:rounded-3xl"
         >
           {[...repos]
             .sort((a, b) => {

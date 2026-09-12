@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X, Github } from "lucide-react";
+import { Menu, X, Github, Instagram, ArrowUpRight } from "lucide-react";
 import { LogoMark } from "./LogoMark";
 import { LINKS, NAV, SITE } from "../data/site";
 import type { Route } from "../hooks/useRoute";
@@ -61,13 +61,25 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
     if (currentRoute !== "home") {
       const section = href.replace("#", "");
       onNavigate?.("home", section);
+    } else if (href.startsWith("#")) {
+      const id = href.replace("#", "");
+      const el = document.getElementById(id);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth" });
+        }, 120);
+      }
     }
   };
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setOpen(false);
-    onNavigate?.("home");
+    if (currentRoute === "home") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      onNavigate?.("home");
+    }
   };
 
   return (
@@ -189,7 +201,7 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
             transition={{ duration: 0.22 }}
             className="fixed inset-0 z-[79] bg-ink/95 backdrop-blur-xl lg:hidden overflow-y-auto"
           >
-            <ul className="flex min-h-full flex-col justify-center gap-1 px-8 py-20">
+            <ul className="flex min-h-full flex-col justify-center gap-1 px-6 sm:px-8 py-20">
               {/* Highlight link to Repo of the Week on mobile */}
               <motion.li
                 initial={{ opacity: 0, x: -18 }}
@@ -202,45 +214,86 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
                     setOpen(false);
                     onNavigate?.("repo-of-the-week");
                   }}
-                  className="w-full text-left flex items-center justify-between border-b border-flame/30 py-5 font-display text-2xl font-bold text-flame"
+                  className={`w-full text-left flex items-center justify-between border-b border-flame/30 py-4 font-display text-2xl font-bold transition-colors cursor-pointer touch-manipulation ${
+                    currentRoute === "repo-of-the-week" ? "text-flame" : "text-flame hover:text-flame-hot"
+                  }`}
                 >
-                  <span>Repo of the Week</span>
-                  <span className="rounded-full bg-flame px-2.5 py-0.5 font-mono text-xs font-semibold text-ink uppercase">
-                    New
+                  <span className="flex items-center gap-2">
+                    <span>Repo of the Week</span>
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-flame opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-flame" />
+                    </span>
+                  </span>
+                  <span className="rounded-full bg-flame px-2.5 py-0.5 font-mono text-[11px] font-semibold text-ink uppercase">
+                    Spotlight
                   </span>
                 </button>
               </motion.li>
 
-              {NAV.map((item, i) => (
-                <motion.li
-                  key={item.href}
-                  initial={{ opacity: 0, x: -18 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 + i * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <a
-                    href={item.href}
-                    onClick={() => handleNavClick(item.href)}
-                    className="block border-b border-white/5 py-4 font-display text-2xl font-semibold text-bone"
+              {NAV.map((item, i) => {
+                const isActive = currentRoute === "home" && active === item.href;
+                return (
+                  <motion.li
+                    key={item.href}
+                    initial={{ opacity: 0, x: -18 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 + i * 0.04, ease: [0.16, 1, 0.3, 1] }}
                   >
-                    {item.label}
-                  </a>
-                </motion.li>
-              ))}
+                    <a
+                      href={item.href}
+                      onClick={() => handleNavClick(item.href)}
+                      className={`flex items-center justify-between border-b border-white/5 py-3.5 font-display text-2xl font-semibold transition-colors touch-manipulation ${
+                        isActive ? "text-flame" : "text-bone hover:text-flame"
+                      }`}
+                    >
+                      <span>{item.label}</span>
+                      {isActive && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-flame" />
+                      )}
+                    </a>
+                  </motion.li>
+                );
+              })}
 
               <motion.li
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="pt-6"
+                transition={{ delay: 0.35 }}
+                className="pt-6 flex flex-col gap-4"
               >
                 <a
                   href="#join"
                   onClick={() => handleNavClick("#join")}
-                  className="inline-flex min-h-[48px] items-center rounded-full bg-flame px-7 py-3 font-semibold text-ink"
+                  className="flex min-h-[48px] items-center justify-center rounded-full bg-flame px-7 py-3 font-semibold text-ink shadow-[0_0_25px_rgba(255,122,26,0.3)] transition-colors hover:bg-flame-hot touch-manipulation"
                 >
                   Join the club
                 </a>
+
+                {/* Mobile Drawer Social Links */}
+                <div className="flex items-center justify-center gap-3 pt-2">
+                  <a
+                    href={LINKS.github}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="flex min-h-[44px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-mono text-ash hover:border-flame/40 hover:text-bone transition-all touch-manipulation"
+                  >
+                    <Github size={15} />
+                    <span>GitHub</span>
+                    <ArrowUpRight size={12} className="opacity-60" />
+                  </a>
+
+                  <a
+                    href={LINKS.instagram}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="flex min-h-[44px] items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-mono text-ash hover:border-flame/40 hover:text-bone transition-all touch-manipulation"
+                  >
+                    <Instagram size={15} />
+                    <span>Instagram</span>
+                    <ArrowUpRight size={12} className="opacity-60" />
+                  </a>
+                </div>
               </motion.li>
             </ul>
           </motion.div>

@@ -40,12 +40,12 @@ export function SubmitProjectModal() {
       {/* Floating Bottom-Right Pill Button */}
       <aside
         aria-label="Submit project button"
-        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 print:hidden"
+        className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-50 print:hidden"
       >
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 rounded-full border border-flame/50 bg-ink/90 px-4 py-2.5 text-bone shadow-[0_0_25px_rgba(255,122,26,0.22)] backdrop-blur-xl transition-all duration-300 hover:border-flame hover:scale-105 hover:shadow-[0_0_35px_rgba(255,122,26,0.45)] cursor-pointer touch-manipulation min-h-[44px]"
+          className="group relative flex items-center gap-2.5 rounded-full border border-flame/50 bg-ink/90 px-4 py-2.5 text-bone shadow-[0_0_25px_rgba(255,122,26,0.22)] backdrop-blur-xl transition-all duration-300 hover:border-flame hover:scale-105 active:scale-95 hover:shadow-[0_0_35px_rgba(255,122,26,0.45)] cursor-pointer touch-manipulation min-h-[44px]"
           aria-haspopup="dialog"
           aria-expanded={isOpen}
           title="Submit your repo"
@@ -87,7 +87,7 @@ export function SubmitProjectModal() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 12 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 w-full max-w-[430px] max-h-[90dvh] overflow-y-auto no-scrollbar rounded-3xl border border-white/[0.1] bg-gradient-to-b from-[#14141a] via-[#0d0d12] to-[#08080a] p-5 sm:p-7 shadow-[0_25px_65px_rgba(0,0,0,0.85),0_0_40px_rgba(255,122,26,0.18)] backdrop-blur-2xl"
+              className="relative z-10 w-full max-w-[430px] max-h-[90dvh] overflow-y-auto no-scrollbar rounded-3xl border border-white/[0.1] bg-gradient-to-b from-[#14141a] via-[#0d0d12] to-[#08080a] p-4 xs:p-5 sm:p-7 shadow-[0_25px_65px_rgba(0,0,0,0.85),0_0_40px_rgba(255,122,26,0.18)] backdrop-blur-2xl"
             >
               {/* On-Brand Signal Flame Top Hairline */}
               <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-flame via-flame-hot/70 to-transparent" />
@@ -122,7 +122,7 @@ export function SubmitProjectModal() {
               <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-2 pl-3.5 backdrop-blur-sm transition-all hover:border-flame/30">
                 <div className="flex items-center gap-2 min-w-0 font-mono text-xs text-ash/80">
                   <span className="h-1.5 w-1.5 rounded-full bg-flame animate-pulse shrink-0" />
-                  <span className="truncate">forms.gle/qP7pM4C6w5oA9K148</span>
+                  <span className="truncate">{SUBMISSION_DETAILS.formUrl.replace(/^https?:\/\//, "")}</span>
                 </div>
 
                 <button

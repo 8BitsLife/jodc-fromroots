@@ -53,12 +53,12 @@ export function Join() {
         </Reveal>
 
         <Reveal delay={0.18}>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <MagneticButton href={LINKS.instagram} external>
+          <div className="mt-8 sm:mt-10 flex flex-col xs:flex-row items-center justify-center gap-3 w-full max-w-md mx-auto xs:max-w-none">
+            <MagneticButton href={LINKS.instagram} external className="w-full xs:w-auto">
               <Instagram size={16} aria-hidden="true" />
               Message us on Instagram
             </MagneticButton>
-            <MagneticButton href={LINKS.github} variant="ghost" external>
+            <MagneticButton href={LINKS.github} variant="ghost" external className="w-full xs:w-auto">
               <Github size={16} aria-hidden="true" />
               Browse our GitHub
             </MagneticButton>

@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { Copy, Check } from "lucide-react";
 import { ACTIVITIES } from "../data/site";
 import { SectionHeading } from "./SectionHeading";
 
@@ -7,10 +9,18 @@ import { SectionHeading } from "./SectionHeading";
  * light background bleeding through 1px gaps, cells that fill on hover.
  */
 export function WhatWeDo() {
+  const [copiedCmd, setCopiedCmd] = useState(false);
+
+  const handleCopyCmd = () => {
+    navigator.clipboard.writeText("git checkout -b fix/that-bug");
+    setCopiedCmd(true);
+    setTimeout(() => setCopiedCmd(false), 1800);
+  };
+
   return (
     <section
       id="what-we-do"
-      className="relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32"
+      className="relative scroll-mt-24 border-t border-white/5 px-5 py-20 sm:px-8 sm:py-32"
     >
       <div className="mx-auto max-w-7xl">
         <SectionHeading
@@ -25,7 +35,7 @@ export function WhatWeDo() {
           lead="Sessions are practical. You leave with something committed, or with a clear idea of what to commit next week."
         />
 
-        <div className="matrix mt-px grid grid-cols-1 md:grid-cols-4">
+        <div className="matrix mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
           {ACTIVITIES.map((item, i) => {
             const Icon = item.icon;
             const feature = Boolean(item.accent);
@@ -37,7 +47,7 @@ export function WhatWeDo() {
                 whileInView={{ opacity: 1 }}
                 viewport={{ once: true, margin: "-60px" }}
                 transition={{ duration: 0.5, delay: i * 0.04 }}
-                className={`group relative flex flex-col bg-ink p-7 transition-colors duration-300 hover:bg-ink-soft sm:p-9 ${item.span}`}
+                className={`group relative flex flex-col bg-ink p-6 sm:p-9 transition-all duration-300 hover:bg-ink-soft active:bg-ink-soft/90 touch-manipulation ${item.span}`}
               >
                 <span
                   aria-hidden="true"
@@ -57,29 +67,46 @@ export function WhatWeDo() {
                 </header>
 
                 <h3
-                  className={`mt-10 font-medium tracking-tight text-bone ${
+                  className={`mt-8 sm:mt-10 font-medium tracking-tight text-bone transition-colors group-hover:text-white ${
                     feature
-                      ? "text-[clamp(1.9rem,3.4vw,2.9rem)]"
-                      : "text-[1.35rem]"
+                      ? "text-[clamp(1.75rem,3.4vw,2.9rem)]"
+                      : "text-lg sm:text-[1.35rem]"
                   }`}
                 >
                   {item.title}
                 </h3>
 
                 <p
-                  className={`mt-3 text-pretty leading-relaxed text-ash ${
-                    feature ? "max-w-sm text-base" : "text-sm"
+                  className={`mt-2.5 sm:mt-3 text-pretty leading-relaxed text-ash text-sm ${
+                    feature ? "max-w-sm sm:text-base" : ""
                   }`}
                 >
                   {item.body}
                 </p>
 
                 {feature && (
-                  <p className="mt-auto pt-10 font-mono text-xs text-ash">
-                    <span className="text-flame">$</span> git checkout -b
-                    fix/that-bug
-                    <span className="animate-blink ml-1 inline-block h-3.5 w-[6px] translate-y-[2px] bg-flame" />
-                  </p>
+                  <div className="mt-auto pt-8 sm:pt-10">
+                    <button
+                      type="button"
+                      onClick={handleCopyCmd}
+                      title="Click to copy command"
+                      className="group/btn inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 font-mono text-xs text-ash hover:border-flame/40 hover:bg-flame/10 hover:text-bone transition-all cursor-pointer touch-manipulation active:scale-95"
+                    >
+                      <span className="text-flame font-bold">$</span>
+                      <span>git checkout -b fix/that-bug</span>
+                      <span className="animate-blink inline-block h-3.5 w-[5px] translate-y-[1px] bg-flame" />
+                      <span className="ml-1 text-[10px] text-ash/60 group-hover/btn:text-flame flex items-center gap-1">
+                        {copiedCmd ? (
+                          <>
+                            <Check size={11} className="text-flame font-bold" />
+                            <span className="text-flame">Copied</span>
+                          </>
+                        ) : (
+                          <Copy size={11} />
+                        )}
+                      </span>
+                    </button>
+                  </div>
                 )}
               </motion.article>
             );

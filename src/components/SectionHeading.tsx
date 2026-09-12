@@ -25,7 +25,7 @@ export function SectionHeading({ index, eyebrow, title, lead }: Props) {
 
       <div className="mt-7 grid gap-x-12 gap-y-6 md:grid-cols-[1.35fr_1fr] md:items-end">
         <Reveal delay={0.05}>
-          <h2 className="max-w-[16ch] text-balance text-[clamp(2.1rem,5.4vw,4.1rem)]">
+          <h2 className="max-w-none md:max-w-[18ch] text-balance text-[clamp(1.95rem,5.2vw,4.1rem)]">
             {title}
           </h2>
         </Reveal>

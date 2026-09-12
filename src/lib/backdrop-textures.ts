@@ -8,6 +8,7 @@
  */
 
 const INK = "#07070a";
+
 const FLAME = "255, 122, 26";
 
 /** Tiling RGBA noise, used by the shader for grain and UV distortion. */

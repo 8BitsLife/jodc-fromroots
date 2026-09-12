@@ -8,6 +8,7 @@ import { WhatWeDo } from "./components/WhatWeDo";
 import { Contribute } from "./components/Contribute";
 import { Stats } from "./components/Stats";
 import { Programs } from "./components/Programs";
+import { Hackathon } from "./components/Hackathon";
 import { Join } from "./components/Join";
 import { Footer } from "./components/Footer";
 import { ScrollProgress } from "./components/ScrollProgress";
@@ -39,6 +40,7 @@ export default function App() {
             <Contribute />
             <Stats />
             <Programs />
+            <Hackathon />
             <Join />
           </main>
           <Footer onNavigate={navigate} />

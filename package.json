@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Landing page for JODC - the open source club of JIIT-128",
   "engines": {
-    "node": ">=20"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "vite",

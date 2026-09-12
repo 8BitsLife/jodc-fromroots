@@ -4,6 +4,7 @@ import { Flame, ArrowUpRight, Instagram } from "lucide-react";
 import { HeroBackdrop } from "./HeroBackdrop";
 import { MagneticButton } from "./MagneticButton";
 import { LINKS, SITE } from "../data/site";
+import { LEADERBOARD_REPOS } from "../data/repoOfTheWeek";
 
 const HEADLINE = ["Build", "in", "the", "open."];
 
@@ -75,7 +76,10 @@ export function Hero({ onExploreRepo }: HeroProps) {
             >
               <Flame size={13} className="text-flame group-hover:text-ink transition-colors" />
               <span>
-                Repo of the Week: <strong className="font-mono text-bone group-hover:text-ink transition-colors">ghost-cache</strong>
+                Repo of the Week:{" "}
+                <strong className="font-mono text-bone group-hover:text-ink transition-colors">
+                  {LEADERBOARD_REPOS[0]?.name ?? "superset"}
+                </strong>
               </span>
             </motion.button>
           )}

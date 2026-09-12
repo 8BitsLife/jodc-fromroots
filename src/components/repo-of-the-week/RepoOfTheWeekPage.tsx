@@ -17,7 +17,7 @@ interface RepoOfTheWeekPageProps {
 
 export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPageProps) {
   const [selectedRepoId, setSelectedRepoId] = useState<string>(
-    LEADERBOARD_REPOS[0]?.id || "ghost-cache"
+    LEADERBOARD_REPOS[0]?.id || "superset"
   );
   const spotlightRef = useRef<HTMLDivElement>(null);
 
@@ -79,7 +79,7 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
           <div className="w-full max-w-3xl mb-7 sm:mb-9">
             <div className="inline-flex items-center gap-2 rounded-full border border-flame/30 bg-flame/10 px-3 py-1 mb-3.5 sm:mb-4 text-xs font-mono font-semibold text-flame">
               <span className="h-1.5 w-1.5 rounded-full bg-flame animate-pulse" />
-              <span>WEEKLY CAMPUS SPOTLIGHT</span>
+              <span>WEEKLY OPEN SOURCE SPOTLIGHT</span>
             </div>
 
             <h1 className="text-[clamp(2.25rem,6.5vw,4.8rem)] font-bold tracking-tight text-bone leading-[1.04]">
@@ -87,7 +87,7 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
             </h1>
 
             <p className="mt-3 text-base sm:text-lg text-ash leading-relaxed max-w-xl">
-              Spotlighting top student open-source software built at JIIT-128.
+              Spotlighting premier open-source software, high-impact repositories, and developer tools curated weekly by JODC.
             </p>
           </div>
 

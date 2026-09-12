@@ -1,63 +1,117 @@
-import { Github, Instagram } from "lucide-react";
+import { Github, Instagram, ArrowUpRight } from "lucide-react";
 import { LINKS, NAV, SITE } from "../data/site";
 import { LogoMark } from "./LogoMark";
 
-export function Footer() {
+interface FooterProps {
+  onNavigate?: (route: "home" | "repo-of-the-week", sectionId?: string) => void;
+}
+
+export function Footer({ onNavigate }: FooterProps) {
   return (
-    <footer className="border-t border-white/5 bg-ink-soft px-5 py-14 sm:px-8">
+    <footer className="relative overflow-hidden border-t border-white/[0.08] bg-ink-soft/90 px-4 pt-14 pb-12 sm:px-8 sm:pt-16">
+      {/* Top ambient hairline gradient */}
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-flame/50 to-transparent" />
+
+      {/* Ambient background soft glow */}
+      <div className="pointer-events-none absolute bottom-0 left-1/2 -translate-x-1/2 h-48 w-[600px] rounded-full bg-flame/[0.03] blur-[140px]" />
+
       <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-          <div className="max-w-sm">
-            <div className="flex min-h-[44px] items-center gap-3 text-bone">
-              <LogoMark size={38} />
-              <span className="font-display text-lg font-bold">
-                JODC<span className="text-flame">.</span>
-              </span>
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 pb-10 sm:pb-12 border-b border-white/[0.06]">
+          {/* Brand Info (5 cols) */}
+          <div className="md:col-span-5 flex flex-col justify-between">
+            <div>
+              <a
+                href="#top"
+                className="inline-flex items-center gap-3 text-bone group"
+                aria-label={`${SITE.name} home`}
+              >
+                <LogoMark size={36} />
+                <span className="font-display text-2xl font-bold tracking-tight">
+                  JODC<span className="text-flame">.</span>
+                </span>
+              </a>
+
+              <p className="mt-4 text-sm leading-relaxed text-ash max-w-sm">
+                {SITE.longName}. {SITE.tagline}
+              </p>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-ash">
-              {SITE.longName}. {SITE.tagline}
-            </p>
           </div>
 
-          <nav aria-label="Footer" className="flex flex-wrap gap-x-8 gap-y-3">
-            {NAV.map((item) => (
+          {/* Navigation Links (4 cols) */}
+          <div className="md:col-span-4">
+            <span className="font-mono text-xs uppercase tracking-widest text-ash/80 block mb-4">
+              Explore JODC
+            </span>
+            <div className="grid grid-cols-2 gap-2.5">
               <a
-                key={item.href}
-                href={item.href}
-                className="inline-flex min-h-[44px] items-center text-sm text-ash transition-colors hover:text-flame"
+                href="/repo-of-the-week"
+                onClick={(e) => {
+                  if (onNavigate) {
+                    e.preventDefault();
+                    onNavigate("repo-of-the-week");
+                  }
+                }}
+                className="font-mono text-xs text-bone hover:text-flame transition-colors py-1 flex items-center gap-1 group"
               >
-                {item.label}
+                <span>Repo of the Week</span>
+                <ArrowUpRight size={11} className="text-flame transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
-            ))}
-          </nav>
+              {NAV.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className="font-mono text-xs text-ash hover:text-bone transition-colors py-1"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </div>
+          </div>
 
-          <div className="flex gap-2">
-            <a
-              href={LINKS.instagram}
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="JODC on Instagram"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-ash transition-colors hover:border-flame hover:text-flame"
-            >
-              <Instagram size={18} aria-hidden="true" />
-            </a>
-            <a
-              href={LINKS.github}
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="JODC on GitHub"
-              className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-ash transition-colors hover:border-flame hover:text-flame"
-            >
-              <Github size={18} aria-hidden="true" />
-            </a>
+          {/* Socials & Connect (3 cols) */}
+          <div className="md:col-span-3 flex flex-col justify-between">
+            <div>
+              <span className="font-mono text-xs uppercase tracking-widest text-ash/80 block mb-4">
+                Community
+              </span>
+              <p className="text-xs text-ash leading-relaxed mb-4">
+                Join our dev-sprints, talk proposals, and open source discussions.
+              </p>
+
+              <div className="flex items-center gap-2.5">
+                <a
+                  href={LINKS.github}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label="JODC on GitHub"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-ash transition-all hover:border-flame hover:bg-flame hover:text-ink shadow-sm touch-manipulation"
+                >
+                  <Github size={18} />
+                </a>
+                <a
+                  href={LINKS.instagram}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  aria-label="JODC on Instagram"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-ash transition-all hover:border-flame hover:bg-flame hover:text-ink shadow-sm touch-manipulation"
+                >
+                  <Instagram size={18} />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-2 border-t border-white/5 pt-6 font-mono text-xs text-ash sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} JODC · {SITE.campus}</p>
+        {/* Bottom copyright line */}
+        <div className="mt-8 flex flex-col gap-3 font-mono text-xs text-ash/70 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            Built in the open by students. Pull requests welcome
-            <span className="text-flame"> ↗</span>
+            &copy; {new Date().getFullYear()} JODC &bull; Student Open Source Development Club
+          </p>
+          <p className="flex items-center gap-1.5 text-ash/80">
+            <span>Built in the open by students</span>
+            <span className="text-flame">&bull;</span>
+            <span className="text-bone">Pull requests welcome</span>
+            <ArrowUpRight size={12} className="text-flame" />
           </p>
         </div>
       </div>

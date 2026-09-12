@@ -79,7 +79,7 @@ export function Terminal() {
       </div>
 
       <div
-        className="min-h-[280px] space-y-1.5 p-5 font-mono text-[13px] leading-relaxed sm:text-sm"
+        className="min-h-[260px] space-y-1.5 p-4 sm:p-5 font-mono text-xs sm:text-sm leading-relaxed overflow-x-auto break-all sm:break-normal"
         aria-label="Example contribution workflow in a terminal"
       >
         {visible.map((line, i) => (

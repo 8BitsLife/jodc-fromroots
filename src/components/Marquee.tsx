@@ -15,7 +15,7 @@ export function Marquee() {
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-ink-soft to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-ink-soft to-transparent" />
 
-      <div className="animate-marquee flex shrink-0 gap-10 whitespace-nowrap pr-10 group-hover:[animation-play-state:paused]">
+      <div className="animate-marquee flex shrink-0 gap-10 whitespace-nowrap pr-10 group-hover:[animation-play-state:paused] active:[animation-play-state:paused]">
         {row.map((item, i) => (
           <span
             key={`${item}-${i}`}

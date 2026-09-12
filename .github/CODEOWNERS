@@ -1,6 +1,0 @@
-# Reviews are requested automatically from the people listed here.
-# GitHub only honours usernames that have write access to this repository.
-# This is a courtesy ping, not a gate: the branch ruleset does not require a
-# code-owner review, so any collaborator's approval can merge a PR.
-
-*   @8BitsLife @simplyvardaan

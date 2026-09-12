@@ -1,9 +1,11 @@
 import { Github, Instagram, ArrowUpRight } from "lucide-react";
 import { LINKS, NAV, SITE } from "../data/site";
 import { LogoMark } from "./LogoMark";
+import { JODCSignature } from "./JODCSignature";
+import type { Route } from "../hooks/useRoute";
 
 interface FooterProps {
-  onNavigate?: (route: "home" | "repo-of-the-week", sectionId?: string) => void;
+  onNavigate?: (route: Route, sectionId?: string) => void;
 }
 
 export function Footer({ onNavigate }: FooterProps) {
@@ -17,8 +19,8 @@ export function Footer({ onNavigate }: FooterProps) {
 
       <div className="mx-auto max-w-7xl">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 sm:gap-10 pb-10 sm:pb-12 border-b border-white/[0.06]">
-          {/* Brand Info (5 cols) */}
-          <div className="md:col-span-5 flex flex-col justify-between">
+          {/* Brand Info (4 cols) */}
+          <div className="md:col-span-4 flex flex-col justify-between">
             <div>
               <a
                 href="#top"
@@ -37,8 +39,8 @@ export function Footer({ onNavigate }: FooterProps) {
             </div>
           </div>
 
-          {/* Navigation Links (4 cols) */}
-          <div className="md:col-span-4">
+          {/* Navigation Links (3 cols) */}
+          <div className="md:col-span-3">
             <span className="font-mono text-xs uppercase tracking-widest text-ash/80 block mb-4">
               Explore JODC
             </span>
@@ -54,6 +56,20 @@ export function Footer({ onNavigate }: FooterProps) {
                 className="font-mono text-xs text-bone hover:text-flame transition-colors py-1 flex items-center gap-1 group"
               >
                 <span>Repo of the Week</span>
+                <ArrowUpRight size={11} className="text-flame transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </a>
+
+              <a
+                href="/hackathon"
+                onClick={(e) => {
+                  if (onNavigate) {
+                    e.preventDefault();
+                    onNavigate("hackathon");
+                  }
+                }}
+                className="font-mono text-xs text-bone hover:text-flame transition-colors py-1 flex items-center gap-1 group"
+              >
+                <span>Hackathon</span>
                 <ArrowUpRight size={11} className="text-flame transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
               {NAV.map((item) => (
@@ -75,14 +91,14 @@ export function Footer({ onNavigate }: FooterProps) {
             </div>
           </div>
 
-          {/* Socials & Connect (3 cols) */}
-          <div className="md:col-span-3 flex flex-col justify-between">
+          {/* Socials & Connect (2 cols) */}
+          <div className="md:col-span-2 flex flex-col justify-between">
             <div>
               <span className="font-mono text-xs uppercase tracking-widest text-ash/80 block mb-4">
                 Community
               </span>
               <p className="text-xs text-ash leading-relaxed mb-4">
-                Join our dev-sprints, talk proposals, and open source discussions.
+                Join our dev-sprints and discussions.
               </p>
 
               <div className="flex items-center gap-2.5">
@@ -106,6 +122,11 @@ export function Footer({ onNavigate }: FooterProps) {
                 </a>
               </div>
             </div>
+          </div>
+
+          {/* Moving Cursive Sign of JODC (3 cols - Right side of Community) */}
+          <div className="md:col-span-3 flex flex-col items-center md:items-end justify-center pt-4 md:pt-0">
+            <JODCSignature />
           </div>
         </div>
 

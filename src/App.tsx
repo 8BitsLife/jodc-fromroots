@@ -2,6 +2,7 @@ import { MotionConfig } from "framer-motion";
 import { Nav } from "./components/Nav";
 import { Hero } from "./components/Hero";
 import { Marquee } from "./components/Marquee";
+import { ScrollStroke } from "./components/ScrollStroke";
 import { About } from "./components/About";
 import { WhatWeDo } from "./components/WhatWeDo";
 import { Contribute } from "./components/Contribute";
@@ -32,6 +33,7 @@ export default function App() {
           <main id="main">
             <Hero onExploreRepo={() => navigate("repo-of-the-week")} />
             <Marquee />
+            <ScrollStroke />
             <About />
             <WhatWeDo />
             <Contribute />

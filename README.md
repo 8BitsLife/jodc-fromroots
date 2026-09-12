@@ -86,6 +86,23 @@ behind it. `components/HeroBackdrop.tsx` decides whether to run it at all.
 - It renders at 0.7x device pixel ratio (`resolutionScale`). The image is blurred;
   nobody can see the difference, and it is roughly half the fragment work.
 
+## The written line
+
+`components/ScrollStroke.tsx` is the act-break after the hero: one flowing line starts
+at the end of "The rest follow.", writes **Open Source** in Ephesis (OFL) as you
+scroll, and runs on into the flame block above the wordmark.
+
+The letters are the font's real outlines, not a drawn imitation. Each glyph is revealed
+through an SVG mask in which a fat stroke travels along the glyph's outer contour from
+its entry point, so the letter appears the way a pen would write it. `data/stroke-word.ts`
+is generated — outlines, entry/exit points, and a per-glyph `outbound` fraction (how far
+along the contour the letter is fully covered, measured by rasterising it). To change
+the word, re-run the generator scripts kept alongside this project's scratch tooling
+(`outline.cjs` then `outbound.cjs`) with a different string; don't hand-edit the data.
+
+Both ends of the line are anchored to real text and rebuilt on resize, so it holds on
+every viewport.
+
 ## Accessibility and motion
 
 - Every animation is gated behind `prefers-reduced-motion`: CSS keyframes are neutralised

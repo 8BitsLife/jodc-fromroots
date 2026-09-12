@@ -75,13 +75,9 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
             </span>
           </div>
 
+
           {/* Hero Headline - Balanced scale */}
           <div className="w-full max-w-3xl mb-7 sm:mb-9">
-            <div className="inline-flex items-center gap-2 rounded-full border border-flame/30 bg-flame/10 px-3 py-1 mb-3.5 sm:mb-4 text-xs font-mono font-semibold text-flame">
-              <span className="h-1.5 w-1.5 rounded-full bg-flame animate-pulse" />
-              <span>WEEKLY OPEN SOURCE SPOTLIGHT</span>
-            </div>
-
             <h1 className="text-[clamp(2.25rem,6.5vw,4.8rem)] font-bold tracking-tight text-bone leading-[1.04]">
               Repo of the <span className="accent text-flame">Week.</span>
             </h1>

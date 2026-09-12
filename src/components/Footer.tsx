@@ -130,29 +130,17 @@ export function Footer({ onNavigate }: FooterProps) {
           </div>
         </div>
 
-        {/* Bottom copyright line and Back to Top */}
+        {/* Bottom copyright line */}
         <div className="mt-8 flex flex-col gap-4 font-mono text-xs text-ash/70 sm:flex-row sm:items-center sm:justify-between">
           <p>
             &copy; {new Date().getFullYear()} JODC &bull; Student Open Source Development Club
           </p>
 
-          <div className="flex items-center gap-4">
-            <p className="flex items-center gap-1.5 text-ash/80">
-              <span>Built in the open by students</span>
-              <span className="text-flame">&bull;</span>
-              <span className="text-bone">Pull requests welcome</span>
-            </p>
-
-            <button
-              type="button"
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              className="group inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[11px] font-mono text-ash hover:border-flame/40 hover:bg-flame/10 hover:text-bone transition-all cursor-pointer active:scale-95 touch-manipulation"
-              title="Back to top of page"
-            >
-              <span>Top</span>
-              <ArrowUpRight size={11} className="transition-transform group-hover:-translate-y-0.5" />
-            </button>
-          </div>
+          <p className="flex items-center gap-1.5 text-ash/80">
+            <span>Built in the open by students</span>
+            <span className="text-flame">&bull;</span>
+            <span className="text-bone">Pull requests welcome</span>
+          </p>
         </div>
       </div>
     </footer>

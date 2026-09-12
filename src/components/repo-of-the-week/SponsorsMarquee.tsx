@@ -127,8 +127,8 @@ export function SponsorsMarquee() {
       </div>
 
       {/* High-Aesthetic Non-Link Marquee Track */}
-      <div className="relative flex w-full max-w-full overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-        <div className="flex shrink-0 animate-marquee items-center gap-3.5 sm:gap-5 pr-5 hover:[animation-play-state:paused] active:[animation-play-state:paused]">
+      <div className="relative flex w-full max-w-full overflow-hidden py-3 [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
+        <div className="flex shrink-0 animate-marquee items-center gap-3.5 sm:gap-5 pr-5 py-2 hover:[animation-play-state:paused] active:[animation-play-state:paused]">
           {items.map((sponsor, idx) => (
             <div
               key={`${sponsor.name}-${idx}`}
@@ -138,15 +138,15 @@ export function SponsorsMarquee() {
                   "--brand-glow": sponsor.glowColor,
                 } as React.CSSProperties
               }
-              className="group flex items-center gap-2.5 sm:gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3.5 py-2.5 sm:px-4.5 sm:py-3 backdrop-blur-xl transition-all duration-300 hover:scale-[1.05] hover:-translate-y-0.5 hover:bg-white/[0.06] hover:border-[var(--brand-color)] hover:shadow-[0_10px_30px_rgba(0,0,0,0.6),0_0_24px_var(--brand-glow)] whitespace-nowrap cursor-default select-none"
+              className="group flex items-center gap-2.5 sm:gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3.5 py-2.5 sm:px-4.5 sm:py-3 backdrop-blur-xl transition-all duration-200 hover:bg-white/[0.05] hover:border-[var(--brand-color)] hover:shadow-[0_0_16px_var(--brand-glow)] whitespace-nowrap cursor-default select-none"
             >
               {/* Authentic Brand Logo */}
-              <span className="text-ash/60 transition-colors duration-300 group-hover:text-[var(--brand-color)]">
+              <span className="text-ash/60 transition-colors duration-200 group-hover:text-[var(--brand-color)]">
                 {sponsor.logo}
               </span>
 
               {/* Only Sponsor Name */}
-              <span className="font-display text-sm font-bold text-bone/90 transition-colors duration-300 group-hover:text-[var(--brand-color)]">
+              <span className="font-display text-sm font-bold text-bone/90 transition-colors duration-200 group-hover:text-[var(--brand-color)]">
                 {sponsor.name}
               </span>
             </div>

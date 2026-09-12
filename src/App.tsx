@@ -8,11 +8,11 @@ import { WhatWeDo } from "./components/WhatWeDo";
 import { Contribute } from "./components/Contribute";
 import { Stats } from "./components/Stats";
 import { Programs } from "./components/Programs";
-import { Hackathon } from "./components/Hackathon";
 import { Join } from "./components/Join";
 import { Footer } from "./components/Footer";
 import { ScrollProgress } from "./components/ScrollProgress";
 import { Cursor } from "./components/Cursor";
+import { HackathonPage } from "./components/hackathon/HackathonPage";
 import { RepoOfTheWeekPage } from "./components/repo-of-the-week/RepoOfTheWeekPage";
 import { useRoute } from "./hooks/useRoute";
 
@@ -29,10 +29,14 @@ export default function App() {
 
       {route === "repo-of-the-week" ? (
         <RepoOfTheWeekPage onBackToHome={() => navigate("home")} onNavigate={navigate} />
+      ) : route === "hackathon" ? (
+        <HackathonPage onBackToHome={() => navigate("home")} onNavigate={navigate} />
       ) : (
         <>
           <main id="main">
-            <Hero onExploreRepo={() => navigate("repo-of-the-week")} />
+            <Hero
+              onExploreRepo={() => navigate("repo-of-the-week")}
+            />
             <Marquee />
             <ScrollStroke />
             <About />
@@ -40,7 +44,6 @@ export default function App() {
             <Contribute />
             <Stats />
             <Programs />
-            <Hackathon />
             <Join />
           </main>
           <Footer onNavigate={navigate} />

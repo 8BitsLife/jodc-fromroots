@@ -58,6 +58,10 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
 
   const handleNavClick = (href: string) => {
     setOpen(false);
+    if (href === "#hackathon") {
+      onNavigate?.("hackathon");
+      return;
+    }
     if (currentRoute !== "home") {
       const section = href.replace("#", "");
       onNavigate?.("home", section);
@@ -116,15 +120,21 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
 
           <ul className="hidden items-center gap-1 lg:flex">
             {NAV.map((item) => {
-              const isActive = currentRoute === "home" && active === item.href;
+              const isHackathon = item.label === "Hackathon";
+              const isActive = isHackathon
+                ? currentRoute === "hackathon"
+                : currentRoute === "home" && active === item.href;
               return (
                 <li key={item.href}>
                   <a
                     href={item.href}
-                    onClick={() => handleNavClick(item.href)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleNavClick(item.href);
+                    }}
                     aria-current={isActive ? "true" : undefined}
-                    className={`relative whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors ${
-                      isActive ? "text-bone" : "text-ash hover:text-bone"
+                    className={`relative whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors cursor-pointer ${
+                      isActive ? "text-bone font-medium" : "text-ash hover:text-bone"
                     }`}
                   >
                     {isActive && (
@@ -145,7 +155,7 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
               <button
                 type="button"
                 onClick={() => onNavigate?.("repo-of-the-week")}
-                className={`relative flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm transition-all ${
+                className={`relative flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm transition-all cursor-pointer ${
                   currentRoute === "repo-of-the-week"
                     ? "bg-flame/15 text-flame border border-flame/40 shadow-[0_0_15px_rgba(255,122,26,0.2)] font-medium"
                     : "text-ash hover:text-bone hover:bg-white/5 border border-transparent"
@@ -232,7 +242,10 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
               </motion.li>
 
               {NAV.map((item, i) => {
-                const isActive = currentRoute === "home" && active === item.href;
+                const isHackathon = item.label === "Hackathon";
+                const isActive = isHackathon
+                  ? currentRoute === "hackathon"
+                  : currentRoute === "home" && active === item.href;
                 return (
                   <motion.li
                     key={item.href}
@@ -242,8 +255,11 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
                   >
                     <a
                       href={item.href}
-                      onClick={() => handleNavClick(item.href)}
-                      className={`flex items-center justify-between border-b border-white/5 py-3.5 font-display text-2xl font-semibold transition-colors touch-manipulation ${
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleNavClick(item.href);
+                      }}
+                      className={`flex items-center justify-between border-b border-white/5 py-3.5 font-display text-2xl font-semibold transition-colors touch-manipulation cursor-pointer ${
                         isActive ? "text-flame" : "text-bone hover:text-flame"
                       }`}
                     >
@@ -260,8 +276,42 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.35 }}
-                className="pt-6 flex flex-col gap-4"
+                className="pt-6 flex flex-col gap-3"
               >
+                {/* Mobile Drawer Route Shortcuts */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      onNavigate?.("repo-of-the-week");
+                    }}
+                    className={`flex items-center justify-center gap-1.5 rounded-2xl border py-3 px-2 text-xs font-mono transition-all cursor-pointer ${
+                      currentRoute === "repo-of-the-week"
+                        ? "border-flame bg-flame/15 text-flame font-bold shadow-[0_0_15px_rgba(255,122,26,0.25)]"
+                        : "border-white/10 bg-white/[0.03] text-ash hover:text-bone"
+                    }`}
+                  >
+                    <span>Repo of Week</span>
+                    <span className="h-1.5 w-1.5 rounded-full bg-flame animate-pulse" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      onNavigate?.("hackathon");
+                    }}
+                    className={`flex items-center justify-center gap-1.5 rounded-2xl border py-3 px-2 text-xs font-mono transition-all cursor-pointer ${
+                      currentRoute === "hackathon"
+                        ? "border-flame bg-flame/15 text-flame font-bold shadow-[0_0_15px_rgba(255,122,26,0.25)]"
+                        : "border-white/10 bg-white/[0.03] text-ash hover:text-bone"
+                    }`}
+                  >
+                    <span>Hackathon</span>
+                  </button>
+                </div>
+
                 <a
                   href="#join"
                   onClick={() => handleNavClick("#join")}

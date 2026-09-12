@@ -8,10 +8,11 @@ import { PreviousSpotlights } from "./PreviousSpotlights";
 import { SponsorsMarquee } from "./SponsorsMarquee";
 import { SubmitProjectModal } from "./SubmitProjectModal";
 import { Footer } from "../Footer";
+import type { Route } from "../../hooks/useRoute";
 
 interface RepoOfTheWeekPageProps {
   onBackToHome: () => void;
-  onNavigate?: (route: "home" | "repo-of-the-week", sectionId?: string) => void;
+  onNavigate?: (route: Route, sectionId?: string) => void;
 }
 
 export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPageProps) {

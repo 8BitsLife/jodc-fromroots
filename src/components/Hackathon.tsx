@@ -20,15 +20,6 @@ const timeline = [
   ["Grand finale", "[DATE & TIME]", "Final presentations, judging, and winner announcement."],
 ];
 
-const judgingCriteria = [
-  ["Innovation", "How unique and creative is the solution?"],
-  ["Technical implementation", "How effectively has technology been used?"],
-  ["Impact", "How effectively does the solution address the problem?"],
-  ["User experience", "How intuitive and usable is the product?"],
-  ["Feasibility", "Can the solution realistically be implemented and scaled?"],
-  ["Presentation", "How clearly does the team communicate its idea and implementation?"],
-];
-
 function DetailGrid({ items }: { items: string[][] }) {
   return (
     <div className="grid gap-px overflow-hidden border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-3">
@@ -58,15 +49,32 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
   );
 }
 
-export function Hackathon() {
+interface HackathonProps {
+  onExploreFullPage?: () => void;
+}
+
+export function Hackathon({ onExploreFullPage }: HackathonProps) {
   return (
     <section id="hackathon" className="noise relative scroll-mt-24 overflow-hidden border-t border-white/5">
       <div aria-hidden="true" className="pointer-events-none absolute right-[-12rem] top-20 h-[32rem] w-[32rem] rounded-full bg-flame/10 blur-[150px]" />
       <div className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-32">
         <Reveal>
-          <div className="flex items-center gap-3 text-flame">
-            <Code2 size={18} aria-hidden="true" />
-            <span className="kicker text-flame">Flagship hackathon</span>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 text-flame">
+              <Code2 size={18} aria-hidden="true" />
+              <span className="kicker text-flame">Flagship hackathon</span>
+            </div>
+
+            {onExploreFullPage && (
+              <button
+                type="button"
+                onClick={onExploreFullPage}
+                className="inline-flex items-center gap-1.5 rounded-full border border-flame/40 bg-flame/10 px-3.5 py-1.5 font-mono text-xs font-semibold text-flame hover:bg-flame hover:text-ink transition-all cursor-pointer"
+              >
+                <span>Full Hackathon Portal</span>
+                <ArrowUpRight size={13} />
+              </button>
+            )}
           </div>
         </Reveal>
         <Reveal delay={0.06}>
@@ -210,11 +218,6 @@ export function Hackathon() {
         </div>
 
        
-
-        <div className="mt-32">
-          <SectionTitle eyebrow="Judging criteria" title="Judging" />
-          <DetailGrid items={judgingCriteria} />
-        </div>
 
         <a href="#join" className="mt-20 inline-flex min-h-[44px] items-center gap-2 font-mono text-sm text-ash underline-offset-4 transition-colors hover:text-flame hover:underline">
           Register your team <ArrowUpRight size={15} aria-hidden="true" />

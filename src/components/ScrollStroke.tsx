@@ -1,8 +1,10 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   motion,
+  useMotionValue,
   useMotionValueEvent,
   useScroll,
+  useSpring,
   useTransform,
   type MotionValue,
 } from "framer-motion";
@@ -108,11 +110,23 @@ function Piece({
       fill="none"
       stroke={mask ? "#fff" : FLAME}
       strokeWidth={strokeWidth}
-      strokeLinecap={mask ? "butt" : "round"}
+      strokeLinecap="round"
       strokeLinejoin="round"
       style={{ pathLength }}
     />
   );
+}
+
+/**
+ * Mask-space copy of a glyph's own outline that fades in over the last stretch
+ * of its window. The travelling mask stroke can't reach every hairline terminal
+ * (the tip of the p, the curl on the S), so once the pen is nearly done the
+ * whole letter is let through and nothing is left cut off.
+ */
+function GlyphSeal({ d, progress, window }: { d: string; progress: MotionValue<number>; window: Window }) {
+  const [a, b] = window;
+  const opacity = useTransform(progress, [a + (b - a) * 0.8, b], [0, 1]);
+  return <motion.path d={d} fill="#fff" style={{ opacity }} />;
 }
 
 /**
@@ -136,7 +150,6 @@ export function ScrollStroke() {
 
   const windows = useMemo(buildWindows, []);
   const [geo, setGeo] = useState<Geometry | null>(null);
-  const [pen, setPen] = useState({ x: 0, y: 0, visible: false });
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -221,10 +234,30 @@ export function ScrollStroke() {
     offset: ["start 0.5", "end 1"],
   });
 
-  // Pen dot: find the piece whose window we are in and read its tip.
-  useMotionValueEvent(scrollYProgress, "change", (v) => {
+  // Wheel scrolling arrives in steps; a light spring turns those steps into a
+  // continuous glide so the pen writes instead of stuttering. Still tied to
+  // scroll position — it just catches up smoothly.
+  const progress = useSpring(scrollYProgress, {
+    stiffness: 110,
+    damping: 26,
+    mass: 0.5,
+    restDelta: 0.0005,
+  });
+
+  // Pen dot lives in motion values so it moves every frame without
+  // re-rendering the whole drawing through React state.
+  const penX = useMotionValue(0);
+  const penY = useMotionValue(0);
+  const penOpacity = useMotionValue(0);
+
+  // Path lengths only change when geometry is rebuilt; measuring them every
+  // frame was a large share of the per-scroll cost.
+  const lengths = useRef(new Map<SVGPathElement, number>());
+  useEffect(() => lengths.current.clear(), [geo]);
+
+  const order = useMemo(() => {
     const n = windows.glyphs.length;
-    const order: Array<{ window: Window; index: number; outbound: number }> = [
+    return [
       { window: windows.leadIn, index: 0, outbound: 1 },
       ...windows.glyphs.map((win, i) => ({
         window: win,
@@ -234,21 +267,33 @@ export function ScrollStroke() {
       { window: windows.rowBreak, index: 1 + n, outbound: 1 },
       { window: windows.exit, index: 2 + n, outbound: 1 },
     ];
-    const active = order.filter(({ window: [a, b] }) => v >= a && v <= b).pop();
+  }, [windows]);
+
+  // Pen dot: find the last piece whose window we are in and read its tip.
+  useMotionValueEvent(progress, "change", (v) => {
+    let active: (typeof order)[number] | undefined;
+    for (const piece of order) {
+      if (v >= piece.window[0] && v <= piece.window[1]) active = piece;
+    }
     if (!active || v <= 0.002 || v >= 0.998) {
-      setPen((p) => (p.visible ? { ...p, visible: false } : p));
+      penOpacity.set(0);
       return;
     }
     const el = pieceRefs.current[active.index];
     if (!el) return;
+    let total = lengths.current.get(el);
+    if (total === undefined) {
+      total = el.getTotalLength();
+      lengths.current.set(el, total);
+    }
+    if (!total) return;
     const [a, b] = active.window;
     const local = Math.min(1, ((v - a) / (b - a)) * active.outbound);
-    const total = el.getTotalLength();
-    if (!total) return;
     const p = el.getPointAtLength(local * total);
-    setPen({ x: p.x, y: p.y, visible: true });
+    penX.set(p.x);
+    penY.set(p.y);
+    penOpacity.set(1);
   });
-
   const setRef = (i: number) => (el: SVGPathElement | null) => {
     pieceRefs.current[i] = el;
   };
@@ -282,7 +327,7 @@ export function ScrollStroke() {
                 <Piece
                   key={i}
                   d={d}
-                  progress={scrollYProgress}
+                  progress={progress}
                   window={windows.glyphs[i]}
                   strokeWidth={geo.maskPx}
                   outbound={STROKE_WORD.glyphs[i].outbound}
@@ -290,27 +335,30 @@ export function ScrollStroke() {
                   pathRef={setRef(1 + i)}
                 />
               ))}
+              {geo.fills.map((d, i) => (
+                <GlyphSeal key={`seal-${i}`} d={d} progress={progress} window={windows.glyphs[i]} />
+              ))}
             </mask>
           </defs>
 
           <g style={{ filter: `drop-shadow(0 0 ${geo.linePx * 2.2}px rgba(255,122,26,0.5))` }}>
             <Piece
               d={geo.leadIn}
-              progress={scrollYProgress}
+              progress={progress}
               window={windows.leadIn}
               strokeWidth={geo.linePx}
               pathRef={setRef(0)}
             />
             <Piece
               d={geo.rowBreak}
-              progress={scrollYProgress}
+              progress={progress}
               window={windows.rowBreak}
               strokeWidth={geo.linePx}
               pathRef={setRef(1 + n)}
             />
             <Piece
               d={geo.exit}
-              progress={scrollYProgress}
+              progress={progress}
               window={windows.exit}
               strokeWidth={geo.linePx}
               pathRef={setRef(2 + n)}
@@ -322,12 +370,10 @@ export function ScrollStroke() {
             </g>
           </g>
 
-          {pen.visible && (
-            <>
-              <circle cx={pen.x} cy={pen.y} r={geo.linePx * 3} fill={FLAME} opacity={0.22} />
-              <circle cx={pen.x} cy={pen.y} r={geo.linePx * 1.1} fill="#fff3e6" />
-            </>
-          )}
+          <motion.g style={{ opacity: penOpacity }}>
+            <motion.circle cx={penX} cy={penY} r={geo.linePx * 3} fill={FLAME} opacity={0.22} />
+            <motion.circle cx={penX} cy={penY} r={geo.linePx * 1.1} fill="#fff3e6" />
+          </motion.g>
         </svg>
       )}
 
@@ -354,7 +400,7 @@ export function ScrollStroke() {
       <div
         ref={slotRef}
         aria-hidden="true"
-        className="mt-12 w-full max-w-4xl sm:mt-16"
+        className="mb-10 mt-12 w-full max-w-4xl sm:mb-16 sm:mt-16"
         style={{ aspectRatio: `${STROKE_WORD.bbox.w} / ${STROKE_WORD.bbox.h}` }}
       />
       <span className="sr-only">Open Source</span>

@@ -2,46 +2,28 @@ import { useEffect, useState, useCallback } from "react";
 
 export type Route = "home" | "repo-of-the-week" | "hackathon" | "team";
 
+/** Every non-home route lives at `/<route>`; home is `/`, optionally `/#section`. */
+const PAGES: readonly Exclude<Route, "home">[] = ["repo-of-the-week", "hackathon", "team"];
+
+function matchPage(value: string): Route | undefined {
+  const slug = value.toLowerCase().replace(/^[#/]+|\/+$/g, "");
+  return PAGES.find((page) => page === slug);
+}
+
 function getRouteFromLocation(): Route {
   if (typeof window === "undefined") return "home";
-
-  const hash = window.location.hash.toLowerCase();
-  const path = window.location.pathname.toLowerCase();
-
-  if (
-    hash.includes("repo-of-the-week") ||
-    path.includes("repo-of-the-week")
-  ) {
-    return "repo-of-the-week";
-  }
-
-  if (hash.includes("hackathon") || path.includes("hackathon")) {
-    return "hackathon";
-  }
-
-  if (hash.includes("team") || path.includes("team")) {
-    return "team";
-  }
-
-  return "home";
+  return matchPage(window.location.pathname) ?? matchPage(window.location.hash) ?? "home";
 }
 
 export function useRoute() {
   const [route, setRoute] = useState<Route>(getRouteFromLocation);
 
   useEffect(() => {
-    // If the visitor lands on a hash URL, clean it up to the aesthetic path
-    if (window.location.hash.includes("repo-of-the-week")) {
-      window.history.replaceState(null, "", "/repo-of-the-week");
-    } else if (window.location.hash.includes("hackathon")) {
-      window.history.replaceState(null, "", "/hackathon");
-    } else if (window.location.hash.includes("team")) {
-      window.history.replaceState(null, "", "/team");
-    }
+    // Old-style hash links (/#team) are rewritten to the real path (/team).
+    const fromHash = matchPage(window.location.hash);
+    if (fromHash) window.history.replaceState(null, "", `/${fromHash}`);
 
-    const handleLocationChange = () => {
-      setRoute(getRouteFromLocation());
-    };
+    const handleLocationChange = () => setRoute(getRouteFromLocation());
 
     window.addEventListener("hashchange", handleLocationChange);
     window.addEventListener("popstate", handleLocationChange);
@@ -53,33 +35,22 @@ export function useRoute() {
   }, []);
 
   const navigate = useCallback((target: Route, sectionId?: string) => {
-    if (target === "repo-of-the-week") {
-      window.history.pushState(null, "", "/repo-of-the-week");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (target === "hackathon") {
-      window.history.pushState(null, "", "/hackathon");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (target === "team") {
-      window.history.pushState(null, "", "/team");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (target === "home") {
+      window.history.pushState(null, "", sectionId ? `/#${sectionId}` : "/");
     } else {
-      if (sectionId) {
-        window.history.pushState(null, "", `/#${sectionId}`);
-      } else {
-        window.history.pushState(null, "", "/");
-      }
+      window.history.pushState(null, "", `/${target}`);
     }
     setRoute(target);
 
-    if (target === "home") {
-      window.setTimeout(() => {
-        if (sectionId) {
-          document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
-        } else {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-      }, 90);
-    }
+    // Wait a tick so the home sections exist before scrolling to one of them.
+    window.setTimeout(() => {
+      const section = sectionId ? document.getElementById(sectionId) : null;
+      if (target === "home" && section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 90);
   }, []);
 
   return { route, navigate };

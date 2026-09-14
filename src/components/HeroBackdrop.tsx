@@ -88,11 +88,11 @@ export function HeroBackdrop() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 overflow-hidden"
+      className="pointer-events-none absolute inset-0 overflow-hidden [mask-image:linear-gradient(180deg,#000_65%,transparent)]"
     >
       {interactive ? (
         <InteractiveBlurReveal
-          mouseRadius={200}
+          mouseRadius={100}
           duration={0.42}
           resolutionScale={0.7}
           style={{ position: "absolute" }}
@@ -107,10 +107,13 @@ export function HeroBackdrop() {
         )
       )}
 
-      {/* Scrims: keep the headline readable over the cleared image, and let the
-          bottom edge sink into the page background. */}
+      {/* Live light over the mark in the texture: breathes slowly and is
+          screen-blended, so it brightens the fog instead of covering it. */}
+      <div className="hero-mark-glow" />
+
+      {/* Scrim keeps the headline readable over the cleared image; the mask on
+          the wrapper dissolves the bottom edge into the page atmosphere. */}
       <div className="absolute inset-0 bg-gradient-to-r from-ink via-ink/55 to-ink/5" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-b from-transparent to-ink" />
     </div>
   );
 }

@@ -28,7 +28,7 @@ export function WhatWeDo() {
           eyebrow="What we run"
           title={
             <>
-              Six ways in, and all of them{" "}
+              Five ways in, and all of them{" "}
               <span className="accent">end in a pull request</span>
             </>
           }

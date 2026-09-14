@@ -1,13 +1,11 @@
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { motion, AnimatePresence, useScroll, useSpring, useTransform } from "framer-motion";
 import {
+  ArrowDown,
   ArrowLeft,
-  ArrowUpRight,
   Code2,
   Trophy,
-  Clock,
-  HelpCircle,
-  ChevronDown,
+  Plus,
   Lightbulb,
   Rocket,
   Calendar,
@@ -25,9 +23,12 @@ import {
   HeartPulse,
   Leaf,
   Layers,
+  type LucideIcon,
 } from "lucide-react";
 import { Reveal } from "../Reveal";
 import { Footer } from "../Footer";
+import { Button } from "../Button";
+import { SectionHeading } from "../SectionHeading";
 import { RegisterModal } from "./RegisterModal";
 import { HACKATHON_DETAILS, HACKATHON_FAQS } from "../../data/hackathon";
 import type { Route } from "../../hooks/useRoute";
@@ -37,7 +38,9 @@ interface HackathonPageProps {
   onNavigate?: (route: Route, sectionId?: string) => void;
 }
 
-const tracks = [
+const ease = [0.16, 1, 0.3, 1] as const;
+
+const tracks: { number: string; title: string; icon: LucideIcon; tags: string[]; body: string }[] = [
   {
     number: "01",
     title: "Artificial intelligence & machine learning",
@@ -82,10 +85,10 @@ const tracks = [
   },
 ];
 
-const timeline = [
+const timeline: { number: string; phase: string; title: string; date: string; icon: LucideIcon; body: string }[] = [
   {
     number: "01",
-    phase: "Phase 01 // Registration Kickoff",
+    phase: "Registration Kickoff",
     title: "Registrations open",
     date: "TBA",
     icon: DoorOpen,
@@ -93,7 +96,7 @@ const timeline = [
   },
   {
     number: "02",
-    phase: "Phase 02 // Roster Lock",
+    phase: "Roster Lock",
     title: "Registrations close",
     date: "TBA",
     icon: Lock,
@@ -101,7 +104,7 @@ const timeline = [
   },
   {
     number: "03",
-    phase: "Phase 03 // Screening",
+    phase: "Screening",
     title: "Team shortlisting",
     date: "TBA",
     icon: CheckCircle2,
@@ -109,7 +112,7 @@ const timeline = [
   },
   {
     number: "04",
-    phase: "Phase 04 // The Sprint",
+    phase: "The Sprint",
     title: "Hackathon kickoff",
     date: "TBA",
     icon: Zap,
@@ -117,7 +120,7 @@ const timeline = [
   },
   {
     number: "05",
-    phase: "Phase 05 // Pairing",
+    phase: "Pairing",
     title: "Mentoring & checkpoints",
     date: "TBA",
     icon: Compass,
@@ -125,7 +128,7 @@ const timeline = [
   },
   {
     number: "06",
-    phase: "Phase 06 // Code Freeze",
+    phase: "Code Freeze",
     title: "Final code freeze",
     date: "TBA",
     icon: GitPullRequest,
@@ -133,7 +136,7 @@ const timeline = [
   },
   {
     number: "07",
-    phase: "Phase 07 // Demo Day",
+    phase: "Demo Day",
     title: "Grand finale & awards",
     date: "TBA",
     icon: Trophy,
@@ -141,51 +144,261 @@ const timeline = [
   },
 ];
 
+const phases: { number: string; title: string; tag: string; icon: LucideIcon; body: string }[] = [
+  {
+    number: "01",
+    title: "Imagine",
+    tag: "Ideation",
+    icon: Lightbulb,
+    body: "Start with a problem worth solving. Brainstorm bold solutions, define system boundaries, and pitch novel approaches with zero gatekeeping.",
+  },
+  {
+    number: "02",
+    title: "Create",
+    tag: "Build Sprint",
+    icon: Code2,
+    body: "Prototype, experiment, and collaborate. Write clean code, push upstream commits, and pair with experienced industry mentors in real-time.",
+  },
+  {
+    number: "03",
+    title: "Impact",
+    tag: "Demo Day",
+    icon: Rocket,
+    body: "Showcase a solution built to matter. Deploy to live staging, demo to seasoned judges, and launch your project into the open source ecosystem.",
+  },
+];
+
 const prizes = [
   {
+    rank: 1,
     place: "1st place",
     tier: "Gold Tier Champion",
     amount: "₹ TBA",
     perks: "Grand Cash Prize + Sponsor Bounties + Hardware Perks + Winner Trophy + Certificate",
-    accent: "from-amber-400/20 to-flame/10 border-flame/50 shadow-[0_0_35px_rgba(255,122,26,0.22)]",
   },
   {
+    rank: 2,
     place: "2nd place",
     tier: "Silver Tier Runner-Up",
     amount: "₹ TBA",
     perks: "Cash Prize + Sponsor Bounties + Exclusive Swag + Runner-up Trophy + Certificate",
-    accent: "from-white/[0.08] to-white/[0.02] border-white/20 shadow-[0_0_25px_rgba(255,255,255,0.06)]",
   },
   {
+    rank: 3,
     place: "3rd place",
     tier: "Bronze Tier Finalist",
     amount: "₹ TBA",
     perks: "Cash Prize + Goodies + Certificate of Excellence + Mentorship Access",
-    accent: "from-amber-700/15 to-transparent border-amber-600/30",
   },
 ];
 
-const specs = [
+/** Medal dots: brushed gold, silver and bronze, kept small so the type leads. */
+const MEDALS = [
+  "bg-[radial-gradient(circle_at_35%_30%,#ffe7a8,#d9a441_60%,#9a6b1c)] shadow-[0_0_14px_rgba(217,164,65,0.45)]",
+  "bg-[radial-gradient(circle_at_35%_30%,#ffffff,#b9bec6_60%,#6f757e)]",
+  "bg-[radial-gradient(circle_at_35%_30%,#f3c3a0,#b8703f_60%,#6e3d1d)]",
+];
+
+const specs: { label: string; value: string; icon: LucideIcon }[] = [
   { label: "Date", value: "TBA • Date Coming Soon", icon: Calendar },
   { label: "Venue", value: "JIIT-128 Campus & Online", icon: MapPin },
   { label: "Team size", value: "2 – 4 Builders", icon: Users },
   { label: "Registration", value: "Opening Soon (TBA)", icon: Code2 },
 ];
 
-function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
+/** One quiet status line in place of a loud banner: a live dot and a sentence. */
+function Status({ children }: { children: string }) {
   return (
-    <div className="mb-8 max-w-3xl">
-      <div className="flex items-center gap-2 text-flame mb-3">
-        <span className="h-1.5 w-1.5 rounded-full bg-flame animate-pulse" />
-        <span className="kicker text-flame">{eyebrow}</span>
+    <p className="mt-8 flex items-start gap-3 font-mono text-[0.7rem] uppercase leading-relaxed tracking-[0.16em] text-ash">
+      <span aria-hidden="true" className="relative mt-1 flex h-2 w-2 shrink-0">
+        <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-flame" />
+        <span className="relative inline-flex h-2 w-2 rounded-full bg-flame" />
+      </span>
+      {children}
+    </p>
+  );
+}
+
+/**
+ * Hero dial: 36 hour ticks around a thin ring that draws itself once, and a
+ * single dot drifting slowly round it. Deliberately quiet — no glow, low
+ * contrast — so it sits beside the headline instead of competing with it.
+ */
+function HoursDial() {
+  const ticks = Array.from({ length: 36 }, (_, i) => i);
+  return (
+    <div className="relative mx-auto aspect-square w-full max-w-[24rem]">
+      <div aria-hidden="true" className="absolute inset-[22%] rounded-full bg-flame/[0.06] blur-[70px]" />
+
+      <svg viewBox="0 0 200 200" className="relative h-full w-full" aria-hidden="true">
+        {ticks.map((i) => (
+          <line
+            key={i}
+            x1="100"
+            y1={i % 6 === 0 ? 9 : 12}
+            x2="100"
+            y2="15"
+            stroke={i % 6 === 0 ? "rgba(245,245,244,0.32)" : "rgba(245,245,244,0.12)"}
+            strokeWidth="1"
+            strokeLinecap="round"
+            transform={`rotate(${i * 10} 100 100)`}
+          />
+        ))}
+
+        <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+        <motion.circle
+          cx="100"
+          cy="100"
+          r="82"
+          fill="none"
+          stroke="rgba(255,122,26,0.55)"
+          strokeWidth="1.25"
+          strokeLinecap="round"
+          transform="rotate(-90 100 100)"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 2.2, delay: 0.4, ease: [0.65, 0, 0.35, 1] }}
+        />
+
+        {/* One slow orbit a minute: enough to feel alive, not enough to watch. */}
+        <motion.g
+          // Rotate about the dial's centre, not the dot's own bounding box.
+          style={{ transformBox: "view-box", transformOrigin: "100px 100px" }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
+        >
+          <circle cx="100" cy="18" r="2.25" fill="var(--color-flame)" />
+        </motion.g>
+      </svg>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <span className="font-display text-[clamp(4rem,7.5vw,5.75rem)] font-medium leading-none tracking-[-0.05em] text-bone/90">
+          36
+        </span>
+        <span className="kicker mt-3 text-ash/80">Hours · Non-stop</span>
       </div>
-      <h2 className="text-balance text-[clamp(2.2rem,5.5vw,4.5rem)] font-semibold leading-[0.96] text-bone tracking-tight">
-        {title}
-      </h2>
     </div>
   );
 }
 
+/**
+ * One milestone. Its node and connector watch their own position against a
+ * line 60% down the viewport: as the page's progress fill reaches the node it
+ * lights up, and it dims again if you scroll back above it.
+ */
+function TimelineItem({ item, index, last }: { item: (typeof timeline)[number]; index: number; last: boolean }) {
+  const ref = useRef<HTMLLIElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.62", "start 0.5"] });
+  const lit = useSpring(scrollYProgress, { stiffness: 220, damping: 30 });
+  const nodeBg = useTransform(lit, [0, 1], ["rgba(8,8,10,1)", "rgba(255,122,26,1)"]);
+  const nodeText = useTransform(lit, [0, 1], ["rgba(255,122,26,1)", "rgba(8,8,10,1)"]);
+  const nodeGlow = useTransform(lit, [0, 1], ["0 0 0 0 rgba(255,122,26,0)", "0 0 0 6px rgba(255,122,26,0.12), 0 0 28px rgba(255,122,26,0.55)"]);
+  const connector = useTransform(lit, [0, 1], [0, 1]);
+  const cardRing = useTransform(lit, [0, 1], ["rgba(255,255,255,0.08)", "rgba(255,122,26,0.28)"]);
+  const cardShadow = useTransform(cardRing, (c) => `inset 0 0 0 1px ${c}`);
+
+  const left = index % 2 === 0;
+  const { number, phase, title, date, body, icon: Icon } = item;
+
+  return (
+    <li
+      ref={ref}
+      className="relative grid grid-cols-[2.5rem_1fr] gap-x-5 pb-10 last:pb-0 lg:grid-cols-[1fr_5rem_1fr] lg:gap-x-0 lg:pb-4"
+    >
+      {/* Node on the spine */}
+      <div className="relative col-start-1 row-start-1 flex justify-center pt-6 lg:col-start-2">
+        <motion.span
+          style={{ backgroundColor: nodeBg, color: nodeText, boxShadow: nodeGlow }}
+          className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full font-mono text-[11px] ring-1 ring-inset ring-flame/50"
+        >
+          {number}
+        </motion.span>
+
+        {/* Connector toward the card, lighting with the node. */}
+        <motion.span
+          aria-hidden="true"
+          style={{ scaleX: connector }}
+          className={`absolute top-[2.75rem] hidden h-px w-[calc(50%-1.25rem)] bg-flame lg:block ${
+            left ? "right-1/2 mr-5 origin-right" : "left-1/2 ml-5 origin-left"
+          }`}
+        />
+      </div>
+
+      <motion.article
+        initial={{ opacity: 0, x: left ? -28 : 28 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.7, ease }}
+        style={{ boxShadow: cardShadow }}
+        className={`group relative col-start-2 row-start-1 overflow-hidden rounded-2xl p-6 transition-colors duration-300 sm:p-7 ${
+          left ? "lg:col-start-1 lg:mr-2" : "lg:col-start-3 lg:ml-2"
+        } ${last ? "bg-flame/[0.05] hover:bg-flame/[0.08]" : "bg-white/[0.02] hover:bg-white/[0.04]"}`}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <p className="kicker flex items-center gap-2">
+            <Icon size={13} aria-hidden="true" className="text-flame" />
+            Phase {number} · {phase}
+          </p>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.16em] text-bone ring-1 ring-inset ring-white/10">
+            <Calendar size={11} aria-hidden="true" className="text-flame" />
+            {date}
+          </span>
+        </div>
+
+        <h3 className="mt-4 text-[1.5rem] font-medium tracking-tight text-bone transition-colors duration-300 group-hover:text-flame sm:text-[1.75rem]">
+          {title}
+        </h3>
+        <p className="mt-2.5 text-pretty text-sm leading-relaxed text-ash">{body}</p>
+
+        <p className="mt-5 flex items-center justify-between border-t border-white/[0.06] pt-4 font-mono text-[11px] text-ash">
+          <span>
+            Milestone {number} of {String(timeline.length).padStart(2, "0")}
+          </span>
+          <span className="text-bone/80">{last ? "Finale" : "Scheduled"}</span>
+        </p>
+      </motion.article>
+    </li>
+  );
+}
+
+/**
+ * Alternating milestones around a central spine. A flame fill grows down the
+ * spine with scroll, a glowing tip rides its leading edge, and each node lights
+ * as the fill passes it. On small screens the spine moves to the left edge.
+ */
+function Timeline() {
+  const ref = useRef<HTMLOListElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.6", "end 0.6"] });
+  const fill = useSpring(scrollYProgress, { stiffness: 140, damping: 28, restDelta: 0.001 });
+  const tipTop = useTransform(fill, (v) => `${v * 100}%`);
+  const tipOpacity = useTransform(fill, [0, 0.02, 0.98, 1], [0, 1, 1, 0]);
+
+  return (
+    <div className="relative mt-12">
+      {/* Spine: faint track, flame fill and glowing tip. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-6 left-5 top-6 w-px -translate-x-1/2 lg:left-1/2"
+      >
+        <span className="absolute inset-0 bg-white/10" />
+        <motion.span
+          style={{ scaleY: fill }}
+          className="absolute inset-0 origin-top bg-gradient-to-b from-flame-deep via-flame to-flame-hot"
+        />
+        <motion.span
+          style={{ top: tipTop, opacity: tipOpacity }}
+          className="absolute left-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#fff3e6] shadow-[0_0_0_4px_rgba(255,122,26,0.25),0_0_24px_6px_rgba(255,122,26,0.7)]"
+        />
+      </div>
+
+      <ol ref={ref} className="relative">
+        {timeline.map((item, i) => (
+          <TimelineItem key={item.title} item={item} index={i} last={i === timeline.length - 1} />
+        ))}
+      </ol>
+    </div>
+  );
+}
 export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
@@ -197,577 +410,516 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
     };
   }, []);
 
+  const goHome = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    onBackToHome();
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="noise relative min-h-screen w-full max-w-full overflow-x-hidden bg-transparent text-bone pt-[68px]"
+      className="relative min-h-screen w-full max-w-full overflow-x-clip pt-[68px] text-bone"
     >
-      {/* Dynamic Background Glows */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-14rem] top-16 h-[38rem] w-[38rem] rounded-full bg-flame/[0.12] blur-[170px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-[-12rem] top-[40%] h-[32rem] w-[32rem] rounded-full bg-flame/[0.06] blur-[160px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute right-[-8rem] bottom-[20%] h-[30rem] w-[30rem] rounded-full bg-flame/[0.05] blur-[150px]"
-      />
+      <main id="main">
+        {/* ── Hero ─────────────────────────────────────────────────────── */}
+        <section className="noise relative overflow-hidden px-5 pb-16 pt-10 sm:px-8 sm:pb-24 sm:pt-14">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-40 top-10 h-[36rem] w-[36rem] rounded-full bg-flame/[0.1] blur-[170px]"
+          />
 
-      <main id="main" className="relative mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-16">
-        {/* Navigation Bar Top */}
-        <div className="mb-10 flex items-center justify-between gap-4">
-          <button
-            type="button"
-            onClick={onBackToHome}
-            className="group inline-flex min-h-[42px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 font-mono text-xs text-ash backdrop-blur-sm transition-all hover:border-flame/50 hover:text-bone cursor-pointer touch-manipulation"
-          >
-            <ArrowLeft
-              size={14}
-              className="transition-transform group-hover:-translate-x-1"
-            />
-            <span>Back to Home</span>
-          </button>
+          <div className="relative mx-auto max-w-7xl">
+            <nav aria-label="Breadcrumb" className="flex items-center justify-between gap-4">
+              <a
+                href="/"
+                onClick={goHome}
+                className="group inline-flex min-h-11 items-center gap-2 font-mono text-xs text-ash transition-colors hover:text-bone"
+              >
+                <ArrowLeft size={14} aria-hidden="true" className="transition-transform duration-300 group-hover:-translate-x-1" />
+                <span>JODC</span>
+                <span aria-hidden="true" className="text-white/20">/</span>
+                <span className="text-bone">Hackathon</span>
+              </a>
 
-          <a
-            href={HACKATHON_DETAILS.registrationUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="inline-flex min-h-[42px] items-center gap-1.5 rounded-full border border-flame/40 bg-flame/10 px-4 py-2 font-mono text-xs font-semibold text-flame transition-all hover:bg-flame hover:text-ink cursor-pointer shadow-[0_0_15px_rgba(255,122,26,0.2)]"
-          >
-            <span>Register Squad</span>
-            <ArrowUpRight size={14} />
-          </a>
-        </div>
-
-        {/* Flagship Hackathon Header */}
-        <Reveal>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-flame/30 bg-flame/10 px-3.5 py-1 text-xs font-mono text-flame">
-              <Code2 size={15} aria-hidden="true" />
-              <span className="uppercase tracking-widest font-semibold">Flagship Hackathon</span>
-            </div>
-
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.06}>
-          <h1 className="mt-6 max-w-5xl text-balance text-[clamp(3.5rem,11vw,9rem)] font-bold leading-[0.84] text-bone tracking-tight">
-            Hackathon<span className="text-flame">.</span>
-          </h1>
-        </Reveal>
-
-        <Reveal delay={0.12}>
-          <div className="mt-10 grid gap-8 border-t border-white/10 pt-8 lg:grid-cols-[1.3fr_0.7fr] lg:items-end">
-            <p className="max-w-3xl text-pretty font-display text-3xl leading-tight text-bone sm:text-5xl">
-              <span className="bg-gradient-to-r from-flame via-flame-hot to-amber-300 bg-clip-text text-transparent font-semibold">
-                Build
-              </span>{" "}
-              Innovate{" "}
-              <span className="bg-gradient-to-r from-flame via-flame-hot to-amber-300 bg-clip-text text-transparent font-semibold">
-                Impact
+              <span className="glass relative hidden items-center gap-2 rounded-full px-3.5 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-bone sm:inline-flex">
+                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-flame" />
+                {HACKATHON_DETAILS.name}
               </span>
-            </p>
-            <p className="text-base leading-relaxed text-ash">
-              36 hours of non-stop engineering where developers, designers, and innovators come together to transform ideas into impactful open-source technology solutions.
-            </p>
-          </div>
-        </Reveal>
+            </nav>
 
-        {/* Fast Specs Matrix */}
-        <div className="mt-12 grid gap-px border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-          {specs.map(({ label, value, icon: Icon }) => (
-            <div
-              key={label}
-              className="group relative overflow-hidden bg-ink p-5 transition-all duration-300 hover:-translate-y-1 hover:bg-flame/[0.09] hover:shadow-[0_14px_34px_rgba(255,122,26,0.16)]"
-            >
-              <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-flame transition-transform duration-500 group-hover:scale-x-100" />
-              <div className="flex items-center justify-between text-ash group-hover:text-flame transition-colors">
-                <span className="kicker group-hover:text-flame-hot">{label}</span>
-                <Icon size={16} />
-              </div>
-              <p className="mt-3 font-display text-lg font-semibold text-bone transition-transform duration-300 group-hover:translate-x-1">
-                {value}
-              </p>
-              <span className="absolute -bottom-10 -right-10 h-24 w-24 rounded-full bg-flame/0 blur-2xl transition-all duration-500 group-hover:bg-flame/25" />
-            </div>
-          ))}
-        </div>
+            <div className="mt-12 grid items-center gap-14 lg:mt-16 lg:grid-cols-[1.25fr_0.75fr] lg:gap-10">
+              <div>
+                <Reveal>
+                  <div className="flex items-baseline gap-4">
+                    <span className="kicker text-flame">Flagship</span>
+                    <span className="kicker">Hackathon · Open source</span>
+                  </div>
+                </Reveal>
 
-        {/* ------------------------------------------------------------- */}
-        {/* "About the hackathon" Box (Ultra Aesthetic Think. Build. Innovate.) */}
-        {/* ------------------------------------------------------------- */}
-        <div className="relative mt-24 sm:mt-32 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.04] via-ink to-white/[0.02] p-7 sm:p-12 lg:p-16 backdrop-blur-xl shadow-[0_20px_60px_rgba(0,0,0,0.6)]">
-          {/* Ambient Glows */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full border border-flame/20 bg-flame/[0.08] blur-xl"
-          />
-          <div
-            aria-hidden="true"
-            className="pointer-events-none absolute bottom-0 left-1/4 h-px w-2/3 bg-gradient-to-r from-transparent via-flame to-transparent"
-          />
-
-          <div className="relative grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-20">
-            <div>
-              <div className="flex items-center gap-2 text-flame mb-3">
-                <span className="h-2 w-2 rounded-full bg-flame animate-ping" />
-                <span className="kicker text-flame">Core philosophy</span>
-              </div>
-
-              <h2 className="mt-4 max-w-xl font-display text-[clamp(3.2rem,7.5vw,6.5rem)] font-bold leading-[0.88] text-bone tracking-tight">
-                <span className="block hover:translate-x-1.5 transition-transform duration-300">
-                  Think.
-                </span>
-                <span className="bg-gradient-to-r from-flame via-flame-hot to-amber-300 bg-clip-text text-transparent block hover:translate-x-1.5 transition-transform duration-300">
-                  Build.
-                </span>
-                <span className="block hover:translate-x-1.5 transition-transform duration-300 italic font-serif text-white/95">
-                  Innovate.
-                </span>
-              </h2>
-
-              <p className="mt-8 max-w-md text-base leading-relaxed text-ash">
-                {HACKATHON_DETAILS.name} brings creators, developers, and problem-solvers together to turn ambitious ideas into open, scalable solutions for real-world challenges.
-              </p>
-
-              {/* Tech Badges */}
-              <div className="mt-8 flex flex-wrap gap-2">
-                <span className="px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] text-xs font-mono text-ash hover:border-flame/40 transition-colors">
-                  36h Non-stop Sprint
-                </span>
-                <span className="px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] text-xs font-mono text-ash hover:border-flame/40 transition-colors">
-                  Hybrid Access
-                </span>
-                <span className="px-3 py-1 rounded-full border border-flame/30 bg-flame/10 text-xs font-mono text-flame font-medium">
-                  100% Open Source
-                </span>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div
-                aria-hidden="true"
-                className="absolute bottom-8 -left-4 top-8 w-px bg-gradient-to-b from-flame/10 via-flame to-flame/10"
-              />
-              <div className="space-y-4">
-                {[
-                  {
-                    number: "01",
-                    title: "Imagine",
-                    tag: "Phase 01 • Ideation",
-                    icon: Lightbulb,
-                    body: "Start with a problem worth solving. Brainstorm bold solutions, define system boundaries, and pitch novel approaches with zero gatekeeping.",
-                  },
-                  {
-                    number: "02",
-                    title: "Create",
-                    tag: "Phase 02 • Build Sprint",
-                    icon: Code2,
-                    body: "Prototype, experiment, and collaborate. Write clean code, push upstream commits, and pair with experienced industry mentors in real-time.",
-                  },
-                  {
-                    number: "03",
-                    title: "Impact",
-                    tag: "Phase 03 • Demo Day",
-                    icon: Rocket,
-                    body: "Showcase a solution built to matter. Deploy to live staging, demo to seasoned judges, and launch your project into the open source ecosystem.",
-                  },
-                ].map(({ number, title, tag, icon: Icon, body }) => (
-                  <div
-                    key={number}
-                    className="group relative flex gap-5 rounded-2xl border border-white/10 bg-ink/80 p-5 sm:p-6 transition-all duration-300 hover:translate-x-2 hover:border-flame/60 hover:bg-flame/[0.07] hover:shadow-[0_10px_30px_rgba(255,122,26,0.12)]"
+                <h1 className="mt-6 overflow-hidden text-[clamp(3.6rem,12vw,9.5rem)] font-semibold leading-[0.86] tracking-[-0.055em] text-bone">
+                  <motion.span
+                    className="inline-block"
+                    initial={{ y: "105%" }}
+                    animate={{ y: 0 }}
+                    transition={{ duration: 0.9, delay: 0.1, ease }}
                   >
-                    <div className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-flame/40 bg-ink font-mono text-xs font-bold text-flame transition-all duration-300 group-hover:bg-flame group-hover:text-ink group-hover:scale-105 shadow-sm">
-                      {number}
-                    </div>
+                    Hackathon<span className="text-flame">.</span>
+                  </motion.span>
+                </h1>
 
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <h3 className="font-display text-xl font-bold text-bone transition-colors group-hover:text-flame-hot flex items-center gap-2">
-                          <span>{title}</span>
-                          <Icon size={16} className="text-flame/70 group-hover:text-flame transition-colors" />
-                        </h3>
-                        <span className="font-mono text-[10px] uppercase tracking-wider text-ash/70 group-hover:text-flame/90 transition-colors">
-                          {tag}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-relaxed text-ash">{body}</p>
-                    </div>
+                <Reveal delay={0.15}>
+                  <p className="mt-8 text-[clamp(1.6rem,3.6vw,2.6rem)] font-medium leading-tight tracking-tight text-bone">
+                    Build. <span className="accent">Innovate.</span> Impact.
+                  </p>
+                </Reveal>
 
-                    <span className="absolute bottom-0 left-0 h-0.5 w-0 bg-flame transition-all duration-500 group-hover:w-full rounded-b-2xl" />
+                <Reveal delay={0.2}>
+                  <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-ash sm:text-lg">
+                    36 hours of non-stop engineering where developers, designers, and innovators come together to transform ideas into impactful open-source technology solutions.
+                  </p>
+                </Reveal>
+
+                <Reveal delay={0.25}>
+                  <div className="mt-9 flex flex-wrap items-center gap-3">
+                    <Button href={HACKATHON_DETAILS.registrationUrl} external>
+                      Register Squad
+                    </Button>
+                    <Button href="#tracks-section" variant="ghost" icon={ArrowDown} travel="down">
+                      Explore tracks
+                    </Button>
+                  </div>
+                </Reveal>
+              </div>
+
+              <Reveal delay={0.1} className="hidden lg:block">
+                <HoursDial />
+              </Reveal>
+            </div>
+
+            {/* Fast specs: one ruled row, stacking on small screens. */}
+            <Reveal delay={0.3}>
+              <dl className="matrix mt-16 grid overflow-hidden rounded-2xl sm:grid-cols-2 lg:mt-20 lg:grid-cols-4">
+                {specs.map(({ label, value, icon: Icon }) => (
+                  <div
+                    key={label}
+                    className="group flex items-center gap-4 bg-ink px-5 py-5 transition-colors duration-300 hover:bg-ink-soft sm:px-6 sm:py-6"
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/[0.04] text-flame ring-1 ring-inset ring-white/10 transition-colors duration-300 group-hover:bg-flame/10 group-hover:ring-flame/40"
+                    >
+                      <Icon size={17} strokeWidth={1.75} />
+                    </span>
+                    <div className="min-w-0">
+                      <dt className="kicker">{label}</dt>
+                      <dd className="mt-1 text-[0.95rem] font-medium tracking-tight text-bone">{value}</dd>
+                    </div>
                   </div>
                 ))}
-              </div>
-            </div>
+              </dl>
+            </Reveal>
           </div>
-        </div>
+        </section>
 
-        {/* ------------------------------------------------------------- */}
-        {/* ------------------------------------------------------------- */}
-        {/* Tracks Section ("will be released soon") */}
-        {/* ------------------------------------------------------------- */}
-        <div id="tracks-section" className="mt-24 sm:mt-32 scroll-mt-24">
-          <SectionTitle
-            eyebrow="Hackathon tracks"
-            title="Pick a problem worth solving."
-          />
+        {/* ── Core philosophy ──────────────────────────────────────────── */}
+        <section className="pane relative border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+          <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24">
+            <div className="lg:sticky lg:top-28 lg:self-start">
+              <Reveal>
+                <div className="flex items-baseline gap-4">
+                  <span className="kicker text-flame">01</span>
+                  <span className="kicker">Core philosophy</span>
+                </div>
+              </Reveal>
 
-          {/* Notice Pill: Will be released soon */}
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-flame/40 bg-flame/10 px-4 py-1.5 font-mono text-xs text-flame mb-8 shadow-[0_0_20px_rgba(255,122,26,0.15)]">
-            <Clock size={14} className="animate-spin" style={{ animationDuration: "9s" }} />
-            <span className="font-semibold uppercase tracking-wider">
-              Track details & problem statements will be released soon
-            </span>
-          </div>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {tracks.map(({ number, title, body, icon: Icon, tags }) => (
-              <div
-                key={title}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.05] via-ink-soft/90 to-white/[0.015] p-7 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-2 hover:border-flame/60 hover:bg-flame/[0.05] hover:shadow-[0_24px_50px_rgba(255,122,26,0.18)]"
+              <motion.h2
+                initial={{ clipPath: "inset(0% 0% 100% 0%)", y: 28 }}
+                whileInView={{ clipPath: "inset(0% 0% -15% 0%)", y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.9, ease }}
+                className="mt-7 text-[clamp(3rem,7vw,6rem)] leading-[0.9] tracking-[-0.05em]"
               >
-                {/* Background glow bloom on hover */}
-                <div className="pointer-events-none absolute -bottom-10 -right-10 h-32 w-32 rounded-full bg-flame/0 blur-2xl transition-all duration-500 group-hover:bg-flame/20" />
+                Think.
+                <br />
+                <span className="accent">Build.</span>
+                <br />
+                Innovate.
+              </motion.h2>
 
-                {/* Top Row: Icon tile + Release Soon Badge */}
-                <div>
-                  <div className="flex items-center justify-between gap-3 mb-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-flame/30 bg-flame/10 text-flame shadow-[0_0_15px_rgba(255,122,26,0.15)] group-hover:scale-110 group-hover:bg-flame group-hover:text-ink transition-all duration-300">
-                        <Icon size={20} />
-                      </div>
-                      <span className="font-mono text-[11px] uppercase tracking-widest text-ash/60 font-medium">
-                        Track // {number}
-                      </span>
-                    </div>
+              <Reveal delay={0.1}>
+                <p className="mt-8 max-w-md text-pretty text-base leading-relaxed text-ash">
+                  {HACKATHON_DETAILS.name} brings creators, developers, and problem-solvers together to turn ambitious ideas into open, scalable solutions for real-world challenges.
+                </p>
+              </Reveal>
 
-                    <div className="inline-flex items-center gap-1.5 rounded-full border border-flame/40 bg-flame/10 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-flame font-semibold shadow-sm">
-                      <Clock size={11} className="animate-spin" style={{ animationDuration: "8s" }} />
-                      <span>Releasing Soon</span>
-                    </div>
+              <Reveal delay={0.15}>
+                <ul className="mt-8 flex flex-wrap gap-2 font-mono text-xs">
+                  {["36h Non-stop Sprint", "Hybrid Access"].map((badge) => (
+                    <li key={badge} className="rounded-full bg-white/[0.04] px-3 py-1.5 text-ash ring-1 ring-inset ring-white/10">
+                      {badge}
+                    </li>
+                  ))}
+                  <li className="rounded-full bg-flame/10 px-3 py-1.5 text-flame ring-1 ring-inset ring-flame/35">
+                    100% Open Source
+                  </li>
+                </ul>
+              </Reveal>
+            </div>
+
+            {/* Phases: a vertical stepper, the rail running through each node. */}
+            <ol className="relative">
+              <span
+                aria-hidden="true"
+                className="absolute bottom-6 left-[1.375rem] top-6 w-px bg-gradient-to-b from-flame/60 via-white/10 to-white/0"
+              />
+              {phases.map(({ number, title, tag, icon: Icon, body }, i) => (
+                <motion.li
+                  key={number}
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.6, delay: i * 0.08, ease }}
+                  className="group relative flex gap-6 pb-12 last:pb-0"
+                >
+                  <span className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ink font-mono text-xs text-flame ring-1 ring-inset ring-flame/40 transition-colors duration-300 group-hover:bg-flame group-hover:text-ink">
+                    {number}
+                  </span>
+                  <div className="min-w-0 pt-1.5">
+                    <p className="kicker flex items-center gap-2">
+                      <Icon size={13} aria-hidden="true" className="text-flame" />
+                      Phase {number} · {tag}
+                    </p>
+                    <h3 className="mt-3 text-[clamp(1.75rem,3vw,2.4rem)] font-medium tracking-tight text-bone transition-colors duration-300 group-hover:text-flame">
+                      {title}
+                    </h3>
+                    <p className="mt-3 max-w-lg text-pretty text-[0.95rem] leading-relaxed text-ash">{body}</p>
                   </div>
-
-                  {/* Title */}
-                  <h3 className="font-display text-2xl font-bold capitalize text-bone transition-colors group-hover:text-flame-hot tracking-tight">
-                    {title}
-                  </h3>
-
-                  {/* Body */}
-                  <p className="mt-3 text-sm leading-relaxed text-ash">{body}</p>
-
-                  {/* Domain Tags */}
-                  <div className="mt-5 flex flex-wrap gap-1.5">
-                    {tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-lg border border-white/5 bg-white/[0.03] px-2.5 py-1 font-mono text-[10px] text-ash/80 group-hover:border-flame/30 group-hover:text-bone transition-colors"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bottom Action / Status */}
-                <div className="mt-6 pt-4 border-t border-white/[0.06] flex items-center justify-between font-mono text-xs text-ash/60 group-hover:text-flame transition-colors">
-                  <span className="text-[11px]">Problem Statements</span>
-                  <div className="flex items-center gap-1 font-semibold text-flame">
-                    <span>TBA</span>
-                    <ArrowUpRight size={13} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </div>
-                </div>
-
-                {/* Top animated glowing hairline */}
-                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-flame to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
-            ))}
+                </motion.li>
+              ))}
+            </ol>
           </div>
-        </div>
+        </section>
 
-        {/* ------------------------------------------------------------- */}
-        {/* Event Timeline Section ("TBA" with High-Tech Aesthetic Cards) */}
-        {/* ------------------------------------------------------------- */}
-        <div id="timeline-section" className="mt-24 sm:mt-32 scroll-mt-24">
-          <SectionTitle
-            eyebrow="Event timeline"
-            title="From first idea to grand finale."
-          />
-
-          {/* Status Pill: Schedule TBA */}
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-flame/40 bg-flame/10 px-4 py-1.5 font-mono text-xs text-flame mb-8 shadow-[0_0_20px_rgba(255,122,26,0.15)]">
-            <Clock size={14} className="text-flame" />
-            <span className="font-semibold uppercase tracking-wider">
-              Exact schedule & session timings will be announced (TBA)
-            </span>
-          </div>
-
-          <div className="relative mt-8">
-            {/* Center Timeline Spine */}
-            <div
-              aria-hidden="true"
-              className="absolute bottom-6 left-[15px] top-6 w-px bg-gradient-to-b from-flame/10 via-flame to-flame/10 lg:left-1/2 lg:-translate-x-1/2"
+        {/* ── Tracks ───────────────────────────────────────────────────── */}
+        <section id="tracks-section" className="relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              index="02"
+              eyebrow="Hackathon tracks"
+              title={
+                <>
+                  Pick a problem <span className="accent">worth solving.</span>
+                </>
+              }
+              lead="Six open domains. Choose the one that keeps you up at night and build the thing that fixes it."
             />
 
-            <div className="space-y-8 lg:space-y-0">
-              {timeline.map(({ number, phase, title, date, body, icon: Icon }, index) => {
-                const isLeft = index % 2 === 0;
+            <Status>Track details & problem statements will be released soon</Status>
 
+            <div className="matrix mt-8 grid overflow-hidden rounded-2xl sm:grid-cols-2 lg:grid-cols-3">
+              {tracks.map(({ number, title, body, icon: Icon, tags }, i) => (
+                <motion.article
+                  key={title}
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  transition={{ duration: 0.5, delay: i * 0.05 }}
+                  className="group relative flex flex-col bg-ink p-7 transition-colors duration-300 hover:bg-ink-soft sm:p-8"
+                >
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-x-0 top-0 h-px origin-left scale-x-0 bg-flame transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-x-100"
+                  />
+
+                  <header className="flex items-start justify-between gap-4">
+                    <span className="font-mono text-xs text-ash">{number}</span>
+                    <Icon
+                      size={20}
+                      strokeWidth={1.5}
+                      aria-hidden="true"
+                      className="text-ash transition-colors duration-300 group-hover:text-flame"
+                    />
+                  </header>
+
+                  <h3 className="mt-10 text-[1.4rem] font-medium leading-snug tracking-tight text-bone first-letter:uppercase">
+                    {title}
+                  </h3>
+                  <p className="mt-3 text-pretty text-sm leading-relaxed text-ash">{body}</p>
+
+                  <ul className="mt-6 flex flex-wrap gap-1.5">
+                    {tags.map((tag) => (
+                      <li
+                        key={tag}
+                        className="rounded-md bg-white/[0.04] px-2 py-1 font-mono text-[10px] text-ash transition-colors duration-300 group-hover:text-bone"
+                      >
+                        {tag}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="mt-auto pt-8">
+                    <footer className="flex items-center justify-between border-t border-white/[0.06] pt-5 font-mono text-[11px] text-ash">
+                      <span>Problem statements</span>
+                      <span className="flex items-center gap-1.5 text-flame">
+                        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-flame" />
+                        TBA
+                      </span>
+                    </footer>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Timeline ─────────────────────────────────────────────────── */}
+        <section id="timeline-section" className="pane relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              index="03"
+              eyebrow="Event timeline"
+              title={
+                <>
+                  From first idea to <span className="accent">grand finale.</span>
+                </>
+              }
+              lead="Seven milestones, one sprint. Every date lands here the moment it is locked."
+            />
+
+            <Status>Exact schedule & session timings will be announced (TBA)</Status>
+
+            <Timeline />
+          </div>
+        </section>
+
+        {/* ── Prizes ───────────────────────────────────────────────────── */}
+        <section id="prizes-section" className="relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+          <div className="mx-auto max-w-7xl">
+            <SectionHeading
+              index="04"
+              eyebrow="Prizes"
+              title={
+                <>
+                  Make the <span className="accent">work count.</span>
+                </>
+              }
+              lead="A podium for the best three, and something to take home for everyone who ships."
+            />
+
+            <Status>Prize pool amounts & sponsor bounties will be announced soon (TBA)</Status>
+
+            {/* Results board: one ruled row per place, set like a race sheet. */}
+            <ol className="mt-12 border-t border-white/15">
+              {prizes.map(({ rank, place, tier, amount, perks }, i) => {
+                const champion = rank === 1;
+                const ordinal = place.split(" ")[0];
                 return (
-                  <div
-                    key={title}
-                    className={`relative pl-12 lg:flex lg:min-h-[160px] lg:pl-0 ${
-                      isLeft ? "lg:justify-end" : "lg:justify-start"
+                  <motion.li
+                    key={place}
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-60px" }}
+                    transition={{ duration: 0.6, delay: i * 0.08, ease }}
+                    className={`group relative grid gap-x-10 gap-y-5 border-b border-white/10 md:grid-cols-[minmax(9rem,0.7fr)_1.6fr_auto] md:items-center ${
+                      champion ? "py-10 sm:py-12" : "py-8 sm:py-9"
                     }`}
                   >
-                    {/* Glowing Node on Center Line */}
-                    <div
+                    {/* Hover tell: a flame hairline drawn along the row's top edge. */}
+                    <span
                       aria-hidden="true"
-                      className="absolute left-[7px] top-8 z-10 flex h-[17px] w-[17px] items-center justify-center rounded-full border border-flame bg-ink shadow-[0_0_0_6px_rgba(255,122,26,0.1),0_0_26px_rgba(255,122,26,0.65)] lg:left-1/2 lg:-translate-x-1/2"
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-flame animate-pulse" />
-                    </div>
+                      className="absolute inset-x-0 -top-px h-px origin-left scale-x-0 bg-flame transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:scale-x-100"
+                    />
 
-                    {/* Timeline Card */}
-                    <div
-                      className={`group relative w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/[0.05] via-ink-soft/90 to-white/[0.015] p-6 sm:p-7 backdrop-blur-2xl transition-all duration-300 hover:border-flame/60 hover:bg-flame/[0.06] hover:shadow-[0_20px_45px_rgba(255,122,26,0.18)] hover:-translate-y-1 lg:w-[calc(50%-3.5rem)] ${
-                        index === timeline.length - 1
-                          ? "border-flame/40 bg-flame/[0.08]"
-                          : ""
-                      }`}
-                    >
-                      {/* Ambient corner light bloom */}
-                      <div className="pointer-events-none absolute -bottom-10 -right-10 h-28 w-28 rounded-full bg-flame/0 blur-2xl transition-all duration-500 group-hover:bg-flame/20" />
-
-                      {/* Header row: Number badge + Icon + TBA Status Pill */}
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2.5">
-                          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-flame/40 bg-flame/15 font-mono text-xs font-bold text-flame shadow-[0_0_12px_rgba(255,122,26,0.2)]">
-                            {number}
-                          </span>
-                          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/10 bg-white/[0.03] text-ash/80 group-hover:text-flame group-hover:border-flame/30 transition-colors">
-                            <Icon size={15} />
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5 rounded-full border border-flame/40 bg-flame/15 px-3 py-1 font-mono text-[10px] uppercase tracking-wider text-flame font-semibold shadow-sm">
-                          <span className="h-1.5 w-1.5 rounded-full bg-flame animate-pulse" />
-                          <span>DATE {date}</span>
-                        </div>
-                      </div>
-
-                      {/* Phase sub-kicker */}
-                      <span className="mt-4 block font-mono text-[10px] uppercase tracking-widest text-ash/60 group-hover:text-flame/80 transition-colors">
-                        {phase}
+                    <div className="flex items-center gap-4">
+                      <span aria-hidden="true" className={`h-3 w-3 shrink-0 rounded-full ${MEDALS[i]}`} />
+                      <span
+                        className={`font-serif italic leading-none tracking-[-0.02em] transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:translate-x-1.5 ${
+                          champion ? "text-[clamp(4rem,8vw,6.5rem)] text-flame" : "text-[clamp(3rem,6vw,4.75rem)] text-bone"
+                        }`}
+                      >
+                        {ordinal}
                       </span>
-
-                      {/* Title */}
-                      <h3 className="mt-1 font-display text-2xl sm:text-3xl font-bold capitalize leading-snug text-bone transition-colors group-hover:text-flame-hot">
-                        {title}
-                      </h3>
-
-                      {/* Description */}
-                      <p className="mt-3 text-sm leading-relaxed text-ash">{body}</p>
-
-                      {/* Bottom status bar */}
-                      <div className="mt-5 pt-4 border-t border-white/[0.06] flex items-center justify-between font-mono text-[11px] text-ash/60">
-                        <span className="flex items-center gap-1.5">
-                          <span className="h-1 w-1 rounded-full bg-flame" />
-                          <span>Milestone {number} of 07</span>
-                        </span>
-                        <span className="text-bone/80 group-hover:text-flame transition-colors font-medium">
-                          Scheduled • Open
-                        </span>
-                      </div>
-
-                      {/* Bottom glowing line on hover */}
-                      <div className="absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r from-transparent via-flame to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-3xl" />
                     </div>
-                  </div>
+
+                    <div className="min-w-0">
+                      <p className={`kicker ${champion ? "text-flame" : ""}`}>{tier}</p>
+                      <p className={`mt-3 text-pretty leading-relaxed ${champion ? "text-lg text-bone" : "text-base text-bone/80"}`}>
+                        {perks.split(" + ").map((perk, n, all) => (
+                          <span key={perk}>
+                            {perk}
+                            {n < all.length - 1 && (
+                              <span aria-hidden="true" className="mx-2 text-flame/70">
+                                ·
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </p>
+                      <p className="mt-3 font-mono text-[11px] text-ash">Recognition — JODC Hall of Fame</p>
+                    </div>
+
+                    <p className="flex items-baseline gap-2 md:flex-col md:items-end md:gap-1">
+                      <span
+                        className={`font-semibold tracking-[-0.03em] text-bone ${
+                          champion ? "text-[2.75rem] sm:text-[3.25rem]" : "text-[2rem] sm:text-[2.4rem]"
+                        }`}
+                      >
+                        {amount}
+                      </span>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.16em] text-ash">(TBA)</span>
+                    </p>
+                  </motion.li>
                 );
               })}
-            </div>
-          </div>
-        </div>
 
-        {/* ------------------------------------------------------------- */}
-        {/* Prizes Section ("TBA" with Premium Aesthetic) */}
-        {/* ------------------------------------------------------------- */}
-        <div id="prizes-section" className="mt-24 sm:mt-32 scroll-mt-24">
-          <SectionTitle eyebrow="Prizes" title="Make the work count." />
-
-          {/* Status Pill: Prizes TBA */}
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-flame/40 bg-flame/10 px-4 py-1.5 font-mono text-xs text-flame mb-8 shadow-[0_0_20px_rgba(255,122,26,0.15)]">
-            <Trophy size={14} className="text-flame" />
-            <span className="font-semibold uppercase tracking-wider">
-              Prize pool amounts & sponsor bounties will be announced soon (TBA)
-            </span>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {prizes.map(({ place, tier, amount, perks, accent }) => (
-              <div
-                key={place}
-                className={`group relative overflow-hidden rounded-3xl border bg-gradient-to-b ${accent} p-7 transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(255,122,26,0.18)]`}
+              <motion.li
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.6, delay: 0.24, ease }}
+                className="grid gap-x-10 gap-y-3 py-7 md:grid-cols-[minmax(9rem,0.7fr)_1.6fr_auto] md:items-center"
               >
-                <div className="flex items-center justify-between">
-                  <Trophy
-                    size={26}
-                    className="text-flame transition-transform duration-500 group-hover:rotate-12 group-hover:scale-125"
-                    aria-hidden="true"
-                  />
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-ash/80 rounded-full border border-white/10 px-2.5 py-0.5">
-                    {tier}
+                  <span className="flex items-center gap-4">
+                    <CheckCircle2 size={14} aria-hidden="true" className="shrink-0 text-flame" />
+                    <span className="font-serif text-[2rem] italic leading-none text-ash">All</span>
                   </span>
-                </div>
-
-                <h3 className="mt-6 font-display text-2xl font-bold capitalize text-bone transition-colors group-hover:text-flame-hot">
-                  {place}
-                </h3>
-
-                <div className="mt-3 flex items-baseline gap-2">
-                  <p className="text-3xl font-extrabold text-flame transition-transform duration-300 group-hover:translate-x-1">
-                    {amount}
+                  <p className="text-pretty text-sm leading-relaxed text-ash">
+                    <span className="text-bone">For All Qualified Participants:</span> Official Digital Badges + Cloud Credits + Exclusive JODC Builder Swag
                   </p>
-                  <span className="font-mono text-xs text-ash/60">(TBA)</span>
-                </div>
-
-                <p className="mt-3 text-sm text-ash leading-relaxed">{perks}</p>
-
-                <div className="mt-6 pt-4 border-t border-white/10 flex items-center justify-between font-mono text-xs text-ash/70">
-                  <span>Recognition</span>
-                  <span className="text-bone font-medium">JODC Hall of Fame</span>
-                </div>
-
-                <span className="absolute bottom-0 left-0 h-1 w-0 bg-flame transition-all duration-500 group-hover:w-full rounded-b-3xl" />
-              </div>
-            ))}
+                  <span className="kicker text-flame md:text-right">Guaranteed Swag</span>
+              </motion.li>
+            </ol>
           </div>
+        </section>
 
-          {/* All Participants Perk Bar */}
-          <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.02] p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle2 size={18} className="text-flame shrink-0" />
-              <span className="text-sm text-bone font-medium">
-                For All Qualified Participants: Official Digital Badges + Cloud Credits + Exclusive JODC Builder Swag
-              </span>
+        {/* ── FAQ ──────────────────────────────────────────────────────── */}
+        <section id="faq-section" className="pane relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <div className="lg:sticky lg:top-28 lg:self-start">
+              <Reveal>
+                <div className="flex items-baseline gap-4">
+                  <span className="kicker text-flame">05</span>
+                  <span className="kicker">Questions & Answers</span>
+                </div>
+              </Reveal>
+              <motion.h2
+                initial={{ clipPath: "inset(0% 0% 100% 0%)", y: 28 }}
+                whileInView={{ clipPath: "inset(0% 0% -15% 0%)", y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{ duration: 0.9, ease }}
+                className="mt-7 text-balance text-[clamp(2.2rem,5vw,4rem)]"
+              >
+                Frequently asked <span className="accent">questions.</span>
+              </motion.h2>
+              <Reveal delay={0.1}>
+                <p className="mt-6 max-w-sm text-pretty text-[0.95rem] leading-relaxed text-ash">
+                  Still unsure about something? Ask us on Instagram and we'll add it here.
+                </p>
+              </Reveal>
             </div>
-            <span className="shrink-0 font-mono text-xs text-flame font-semibold border border-flame/30 bg-flame/10 px-3 py-1 rounded-full">
-              Guaranteed Swag
-            </span>
-          </div>
-        </div>
 
-        {/* ------------------------------------------------------------- */}
-        {/* FAQ Section (Accordion with Rich Details) */}
-        {/* ------------------------------------------------------------- */}
-        <div id="faq-section" className="mt-24 sm:mt-32 scroll-mt-24">
-          <SectionTitle
-            eyebrow="Questions & Answers"
-            title="Frequently asked questions."
-          />
-
-          <div className="space-y-3 max-w-4xl">
-            {HACKATHON_FAQS.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-
-              return (
-                <div
-                  key={idx}
-                  className={`rounded-2xl border transition-all overflow-hidden ${
-                    isOpen
-                      ? "border-flame/40 bg-white/[0.035] shadow-[0_0_20px_rgba(255,122,26,0.08)]"
-                      : "border-white/[0.08] bg-white/[0.015] hover:border-white/20"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                    className="w-full flex items-center justify-between p-5 text-left cursor-pointer touch-manipulation gap-4"
-                    aria-expanded={isOpen}
-                  >
-                    <span className="font-display text-base sm:text-lg font-semibold text-bone flex items-center gap-3">
-                      <HelpCircle
-                        size={17}
-                        className={isOpen ? "text-flame" : "text-ash/60"}
-                      />
-                      {faq.question}
-                    </span>
-                    <ChevronDown
-                      size={18}
-                      className={`text-ash transition-transform duration-200 shrink-0 ${
-                        isOpen ? "rotate-180 text-flame" : ""
-                      }`}
-                    />
-                  </button>
-
-                  <AnimatePresence initial={false}>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
+            <ul className="border-t border-white/10">
+              {HACKATHON_FAQS.map((faq, idx) => {
+                const isOpen = openFaqIndex === idx;
+                const panelId = `faq-panel-${idx}`;
+                return (
+                  <li key={faq.question} className="border-b border-white/10">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                      aria-expanded={isOpen}
+                      aria-controls={panelId}
+                      className="group flex w-full items-center gap-5 py-6 text-left"
+                    >
+                      <span className={`font-mono text-xs transition-colors ${isOpen ? "text-flame" : "text-ash"}`}>
+                        {String(idx + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className={`flex-1 text-lg font-medium tracking-tight transition-colors sm:text-xl ${
+                          isOpen ? "text-bone" : "text-bone/85 group-hover:text-bone"
+                        }`}
                       >
-                        <div className="px-6 pb-6 pt-1 text-sm text-ash leading-relaxed border-t border-white/[0.04]">
-                          {faq.answer}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+                        {faq.question}
+                      </span>
+                      <span
+                        aria-hidden="true"
+                        className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ring-1 ring-inset transition-all duration-300 ${
+                          isOpen
+                            ? "rotate-45 bg-flame text-ink ring-flame"
+                            : "text-ash ring-white/15 group-hover:text-bone group-hover:ring-white/30"
+                        }`}
+                      >
+                        <Plus size={16} />
+                      </span>
+                    </button>
 
-        {/* ------------------------------------------------------------- */}
-        {/* Registration CTA Bottom Banner */}
-        {/* ------------------------------------------------------------- */}
-        <div className="relative mt-24 sm:mt-32 overflow-hidden rounded-3xl border border-flame/40 bg-gradient-to-br from-white/[0.05] via-flame/[0.05] to-ink p-8 sm:p-14 text-center">
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          id={panelId}
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease }}
+                          className="overflow-hidden"
+                        >
+                          <p className="max-w-2xl pb-7 pl-9 pr-14 text-pretty text-[0.95rem] leading-relaxed text-ash">
+                            {faq.answer}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+
+        {/* ── Closing call to action ───────────────────────────────────── */}
+        <section className="relative overflow-hidden border-t border-white/5 px-5 py-28 sm:px-8 sm:py-40">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -bottom-10 left-1/2 -translate-x-1/2 h-40 w-96 rounded-full bg-flame/20 blur-3xl"
+            className="pointer-events-none absolute -bottom-56 left-1/2 h-[460px] w-[min(1100px,130vw)] -translate-x-1/2 rounded-full bg-flame/[0.12] blur-[170px]"
           />
-          <span className="kicker text-flame block mb-3">Ready to build?</span>
-          <h2 className="font-display text-3xl sm:text-5xl font-bold text-bone">
-            Assemble Your Squad<span className="text-flame">.</span>
-          </h2>
-          <p className="mt-4 text-sm sm:text-base text-ash max-w-lg mx-auto leading-relaxed">
-            36 hours of relentless engineering at JIIT-128. Turn ambitious technical ideas into working software alongside the best builders on campus.
-          </p>
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-            <a
-              href={HACKATHON_DETAILS.registrationUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="inline-flex min-h-[48px] items-center gap-2 rounded-full bg-flame px-8 py-3 text-sm font-semibold text-ink shadow-[0_0_30px_rgba(255,122,26,0.35)] transition-all hover:bg-flame-hot hover:scale-[1.02] active:scale-95 cursor-pointer touch-manipulation"
-            >
-              <span>Submit Team Registration</span>
-              <ArrowUpRight size={16} />
-            </a>
 
-            <button
-              type="button"
-              onClick={onBackToHome}
-              className="inline-flex min-h-[48px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-6 py-3 text-sm font-mono text-ash hover:border-flame/50 hover:text-bone transition-all cursor-pointer touch-manipulation"
+          <div className="relative mx-auto flex max-w-4xl flex-col items-center text-center">
+            <Reveal>
+              <span className="kicker text-flame">Ready to build?</span>
+            </Reveal>
+            <motion.h2
+              initial={{ clipPath: "inset(0% 0% 100% 0%)", y: 28 }}
+              whileInView={{ clipPath: "inset(0% 0% -15% 0%)", y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.9, ease }}
+              className="mt-7 text-balance text-[clamp(2.6rem,8vw,6rem)] leading-[0.95] tracking-[-0.045em]"
             >
-              <ArrowLeft size={14} />
-              <span>Back to Club Home</span>
-            </button>
+              Assemble your <span className="accent">squad.</span>
+            </motion.h2>
+            <Reveal delay={0.1}>
+              <p className="mt-7 max-w-lg text-pretty text-base leading-relaxed text-ash sm:text-lg">
+                36 hours of relentless engineering at JIIT-128. Turn ambitious technical ideas into working software alongside the best builders on campus.
+              </p>
+            </Reveal>
+            <Reveal delay={0.15}>
+              <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+                <Button href={HACKATHON_DETAILS.registrationUrl} external>
+                  Submit Team Registration
+                </Button>
+                <Button href="/" onClick={goHome} variant="ghost" icon={ArrowLeft} travel="left">
+                  Back to Club Home
+                </Button>
+              </div>
+            </Reveal>
           </div>
-        </div>
+        </section>
       </main>
 
-      {/* Floating Action Modal */}
       <RegisterModal />
 
-      {/* Global Footer with Moving Sign */}
       <Footer onNavigate={onNavigate} />
     </motion.div>
   );

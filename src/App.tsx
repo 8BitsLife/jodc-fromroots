@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useCallback, useState } from "react";
 import { MotionConfig } from "framer-motion";
 import { Nav } from "./components/Nav";
 import { Hero } from "./components/Hero";
@@ -11,42 +11,50 @@ import { Events } from "./components/Events";
 import { Programs } from "./components/Programs";
 import { Join } from "./components/Join";
 import { Footer } from "./components/Footer";
-import { ScrollProgress } from "./components/ScrollProgress";
+import { Atmosphere } from "./components/Atmosphere";
 import { Cursor } from "./components/Cursor";
-import { HackathonPage } from "./components/hackathon/HackathonPage";
-import { RepoOfTheWeekPage } from "./components/repo-of-the-week/RepoOfTheWeekPage";
-import { TeamPage } from "./components/TeamPage";
+import { Preloader, shouldShowPreloader } from "./components/Preloader";
 import { useRoute } from "./hooks/useRoute";
-import { Preloader } from "./components/Preloader";
+
+// Sub-pages are split out so the landing page doesn't ship their code.
+const HackathonPage = lazy(() =>
+  import("./components/hackathon/HackathonPage").then((m) => ({ default: m.HackathonPage })),
+);
+const RepoOfTheWeekPage = lazy(() =>
+  import("./components/repo-of-the-week/RepoOfTheWeekPage").then((m) => ({ default: m.RepoOfTheWeekPage })),
+);
+const TeamPage = lazy(() => import("./components/TeamPage").then((m) => ({ default: m.TeamPage })));
 
 export default function App() {
   const { route, navigate } = useRoute();
-  const [isLoading, setIsLoading] = useState(true);
+  // Decided once on first render; the preloader stays mounted so its exit can play.
+  const [withIntro] = useState(shouldShowPreloader);
+  const [revealed, setRevealed] = useState(!withIntro);
+  const reveal = useCallback(() => setRevealed(true), []);
 
   return (
+    // reducedMotion="user" makes every framer animation honour the visitor's
+    // OS setting, the same way the CSS keyframes already do.
     <MotionConfig reducedMotion="user">
-      {isLoading && <Preloader onComplete={() => setIsLoading(false)} />}
+      {withIntro && <Preloader onReveal={reveal} />}
 
-      <div className="site-atmosphere" aria-hidden="true" />
-      <ScrollProgress />
+      <Atmosphere />
       <Cursor />
-      <Nav currentRoute={route} onNavigate={navigate} />
+      {revealed && <Nav currentRoute={route} onNavigate={navigate} />}
 
-      {route === "repo-of-the-week" ? (
-        <div className="route-page-canvas">
-          <RepoOfTheWeekPage onBackToHome={() => navigate("home")} onNavigate={navigate} />
-        </div>
-      ) : route === "hackathon" ? (
-        <div className="route-page-canvas">
-          <HackathonPage onBackToHome={() => navigate("home")} onNavigate={navigate} />
-        </div>
-      ) : route === "team" ? (
-        <div className="route-page-canvas">
-          <TeamPage onNavigate={navigate} />
-        </div>
+      {/* Pages mount as the curtain lifts, so their entrance animations are seen. */}
+      {!revealed ? null : route !== "home" ? (
+        <Suspense fallback={<div className="min-h-dvh" />}>
+          {route === "repo-of-the-week" ? (
+            <RepoOfTheWeekPage onBackToHome={() => navigate("home")} onNavigate={navigate} />
+          ) : route === "hackathon" ? (
+            <HackathonPage onBackToHome={() => navigate("home")} onNavigate={navigate} />
+          ) : (
+            <TeamPage onNavigate={navigate} />
+          )}
+        </Suspense>
       ) : (
-        <div className="home-page-canvas">
-          <div className="home-background-art" aria-hidden="true" />
+        <>
           <main id="main">
             <Hero />
             <Marquee />
@@ -59,7 +67,7 @@ export default function App() {
             <Join />
           </main>
           <Footer onNavigate={navigate} />
-        </div>
+        </>
       )}
     </MotionConfig>
   );

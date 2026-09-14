@@ -5,7 +5,6 @@ import {
   Users,
   GitPullRequest,
   Handshake,
-  GraduationCap,
 } from "lucide-react";
 
 /**
@@ -85,12 +84,6 @@ export const ACTIVITIES: Activity[] = [
     icon: Handshake,
     span: "md:col-span-2",
   },
-  {
-    title: "Mentorship",
-    body: "We read your proposal drafts, argue about your patches, and keep at it until they are merged.",
-    icon: GraduationCap,
-    span: "md:col-span-4",
-  },
 ];
 
 export type Step = {
@@ -154,12 +147,62 @@ export const PROGRAMS: Program[] = [
   },
 ];
 
-export const STATS = [
-  { value: 40, suffix: "+", label: "sessions, sprints and talks run" },
-  { value: 300, suffix: "+", label: "students introduced to open source" },
-  { value: 12, suffix: "", label: "upstream projects contributed to" },
-  { value: 1, suffix: "", label: "rule: leave the repo better than you found it" },
-] as const;
+export type ClubEvent = {
+  title: string;
+  /** Short, human date — shown in mono caps. */
+  date: string;
+  place: string;
+  body: string;
+};
+
+export const UPCOMING_EVENTS: ClubEvent[] = [
+  {
+    title: "Orientation",
+    date: "Aug 2026",
+    place: "JIIT · Sector 128",
+    body: "An introduction to JODC, open source, the community and your first contribution path.",
+  },
+  {
+    title: "Roadmap",
+    date: "Sep 2026",
+    place: "Workshop Hall",
+    body: "A practical session covering web development, DSA, GitHub workflows and internship-ready projects.",
+  },
+  {
+    title: "Git & GitHub",
+    date: "Oct 2026",
+    place: "JIIT · Open Lab",
+    body: "Hands-on Git, pull requests, code review and a guided first contribution sprint.",
+  },
+];
+
+/** Past events, keyed by academic year, newest first. */
+export const PAST_EVENTS: Record<string, ClubEvent[]> = {
+  "2025–26": [
+    {
+      title: "Orientation",
+      date: "2025–26",
+      place: "JIIT · Sector 128",
+      body: "A first look at the club, our open-source community and the paths students can take with JODC.",
+    },
+  ],
+  "2024–25": [
+    {
+      title: "Roadmap",
+      date: "2024–25",
+      place: "JIIT · Workshop Hall",
+      body: "A practical roadmap through development, competitive programming, DSA and internship preparation.",
+    },
+  ],
+  "2023–24": [
+    {
+      title: "Git & GitHub",
+      date: "2023–24",
+      place: "JIIT · Open Lab",
+      body: "A hands-on introduction to Git, GitHub workflows and the habits behind a good first contribution.",
+    },
+  ],
+};
 
 export const TICKER = [
   "git commit -m \"first contribution\"",

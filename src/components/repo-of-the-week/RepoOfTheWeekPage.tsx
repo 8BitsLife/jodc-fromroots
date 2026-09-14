@@ -47,7 +47,7 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="relative min-h-screen w-full max-w-full overflow-x-hidden bg-transparent text-bone"
+      className="relative min-h-screen w-full max-w-full overflow-x-hidden text-bone"
     >
       {/* Subtle background radial glow */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">

@@ -1,25 +1,31 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, X, Copy, Check, Users, Trophy } from "lucide-react";
 import { HACKATHON_DETAILS } from "../../data/hackathon";
+import { Button } from "../Button";
+
+const ease = [0.16, 1, 0.3, 1] as const;
 
 export function RegisterModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
+    if (!isOpen) return;
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsOpen(false);
     };
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      window.addEventListener("keydown", onKeyDown);
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKeyDown);
+    closeRef.current?.focus();
+    const trigger = triggerRef.current;
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKeyDown);
+      // Hand focus back to the button that opened the dialog.
+      trigger?.focus();
     };
   }, [isOpen]);
 
@@ -31,152 +37,128 @@ export function RegisterModal() {
 
   return (
     <>
-      {/* Floating Bottom-Right Action Button */}
-      <aside
-        aria-label="Hackathon Registration Button"
-        className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-50 print:hidden"
-      >
+      {/* Floating register pill, bottom-right. */}
+      <aside aria-label="Hackathon registration" className="fixed bottom-5 right-4 z-50 print:hidden sm:bottom-6 sm:right-6">
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setIsOpen(true)}
-          className="group relative flex items-center gap-2.5 rounded-full border border-flame/50 bg-ink/90 px-4 py-2.5 text-bone shadow-[0_0_25px_rgba(255,122,26,0.25)] backdrop-blur-xl transition-all duration-300 hover:border-flame hover:scale-105 active:scale-95 hover:shadow-[0_0_35px_rgba(255,122,26,0.45)] cursor-pointer touch-manipulation min-h-[44px]"
           aria-haspopup="dialog"
           aria-expanded={isOpen}
-          title="Register your team"
+          className="glass group relative flex min-h-12 items-center gap-3 rounded-full py-1.5 pl-5 pr-1.5 text-sm font-medium text-bone transition-transform duration-300 active:scale-[0.98]"
         >
-          <span className="font-mono text-xs font-semibold text-bone">
-            Register Team
+          <span className="relative flex h-2 w-2">
+            <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-flame" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-flame" />
           </span>
-          <ArrowUpRight size={14} className="text-flame transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          Register Team
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-flame text-ink transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] group-hover:rotate-45">
+            <ArrowUpRight size={16} strokeWidth={2.25} aria-hidden="true" />
+          </span>
         </button>
       </aside>
 
-      {/* Modal Dialog */}
       <AnimatePresence>
         {isOpen && (
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-3.5 sm:p-6"
+            className="fixed inset-0 z-[100] flex items-end justify-center p-3 sm:items-center sm:p-6"
             role="dialog"
             aria-modal="true"
             aria-labelledby="register-modal-title"
           >
-            {/* Frosted Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-ink/80 backdrop-blur-md"
+              className="fixed inset-0 bg-ink/70 backdrop-blur-md"
             />
 
-            {/* Modal Card */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 16 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 16 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-lg rounded-3xl border border-white/10 bg-ink-soft/95 p-5 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.8)] backdrop-blur-2xl"
+              initial={{ opacity: 0, y: 24, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 16, scale: 0.98 }}
+              transition={{ duration: 0.35, ease }}
+              className="glass relative w-full max-w-lg overflow-hidden rounded-[1.75rem] p-6 sm:p-8"
             >
-              {/* Close Button */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -right-20 -top-24 h-56 w-56 rounded-full bg-flame/20 blur-[80px]"
+              />
+
               <button
+                ref={closeRef}
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="absolute right-4 top-4 rounded-full p-2 text-ash hover:bg-white/5 hover:text-bone transition-colors cursor-pointer"
-                aria-label="Close modal"
+                aria-label="Close"
+                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full text-ash transition-colors hover:bg-white/[0.08] hover:text-bone"
               >
-                <X size={18} />
+                <X size={18} aria-hidden="true" />
               </button>
 
-              {/* Tag & Heading */}
-              <div className="flex items-center gap-2 mb-2">
-                <span className="h-2 w-2 rounded-full bg-flame animate-pulse" />
-                <span className="font-mono text-[11px] font-semibold tracking-wider uppercase text-flame">
-                  {HACKATHON_DETAILS.name} &bull; Team Registration
-                </span>
-              </div>
+              <p className="kicker relative flex items-center gap-2 text-flame">
+                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-flame" />
+                {HACKATHON_DETAILS.name} · Team Registration
+              </p>
 
-              <h2
-                id="register-modal-title"
-                className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-bone"
-              >
-                Register Your <span className="accent text-flame">Squad.</span>
+              <h2 id="register-modal-title" className="relative mt-4 text-[2rem] leading-tight tracking-tight text-bone sm:text-[2.4rem]">
+                Register your <span className="accent">squad.</span>
               </h2>
 
-              <p className="mt-2 text-xs sm:text-sm text-ash leading-relaxed">
+              <p className="relative mt-3 text-pretty text-sm leading-relaxed text-ash">
                 Fill out your team details, track preference, and GitHub handles through the official registration form. Shortlisted teams will be invited to the on-campus hackathon at JIIT-128.
               </p>
 
-              {/* Quick Info Grid */}
-              <div className="mt-5 grid grid-cols-2 gap-2 text-left">
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
-                  <div className="flex items-center gap-1.5 text-flame text-xs font-mono font-semibold">
-                    <Users size={14} />
-                    <span>Team Size</span>
+              <dl className="matrix relative mt-6 grid grid-cols-2 overflow-hidden rounded-2xl">
+                {[
+                  { label: "Team Size", value: HACKATHON_DETAILS.teamSize, Icon: Users },
+                  { label: "Prize Pool", value: HACKATHON_DETAILS.prizePool, Icon: Trophy },
+                ].map(({ label, value, Icon }) => (
+                  <div key={label} className="bg-ink/90 p-4">
+                    <dt className="kicker flex items-center gap-1.5">
+                      <Icon size={13} aria-hidden="true" className="text-flame" />
+                      {label}
+                    </dt>
+                    <dd className="mt-2 font-medium tracking-tight text-bone">{value}</dd>
                   </div>
-                  <div className="mt-1 font-display text-sm font-bold text-bone">
-                    {HACKATHON_DETAILS.teamSize}
-                  </div>
-                </div>
+                ))}
+              </dl>
 
-                <div className="rounded-xl border border-white/5 bg-white/5 bg-opacity-20 p-3">
-                  <div className="flex items-center gap-1.5 text-flame text-xs font-mono font-semibold">
-                    <Trophy size={14} />
-                    <span>Prize Pool</span>
-                  </div>
-                  <div className="mt-1 font-display text-sm font-bold text-bone">
-                    {HACKATHON_DETAILS.prizePool}
-                  </div>
-                </div>
-              </div>
-
-              {/* Form URL direct copy */}
-              <div className="mt-5 rounded-xl border border-white/10 bg-white/[0.03] p-3 sm:p-4">
-                <div className="flex items-center justify-between gap-2 mb-1.5">
-                  <span className="font-mono text-[11px] text-ash">
-                    Official Application Link:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleCopy}
-                    className="inline-flex items-center gap-1 font-mono text-[11px] text-flame hover:underline cursor-pointer"
-                  >
-                    {copied ? (
-                      <>
-                        <Check size={12} className="text-flame" />
-                        <span>Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={12} />
-                        <span>Copy URL</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-                <div className="font-mono text-xs text-bone/90 truncate select-all bg-black/40 rounded-lg px-2.5 py-1.5 border border-white/5">
+              <div className="relative mt-4 flex items-center gap-2 rounded-2xl bg-black/30 p-1.5 pl-4 ring-1 ring-inset ring-white/10">
+                <span className="min-w-0 flex-1 select-all truncate font-mono text-xs text-bone/80">
                   {HACKATHON_DETAILS.registrationUrl}
-                </div>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="flex h-9 shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.06] px-3 font-mono text-[11px] text-bone transition-colors hover:bg-white/[0.12]"
+                >
+                  {copied ? (
+                    <>
+                      <Check size={13} aria-hidden="true" className="text-flame" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={13} aria-hidden="true" />
+                      Copy link
+                    </>
+                  )}
+                </button>
               </div>
 
-              {/* Action Buttons */}
-              <div className="mt-6 flex flex-col sm:flex-row items-center gap-3">
-                <a
-                  href={HACKATHON_DETAILS.registrationUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="w-full inline-flex min-h-[46px] items-center justify-center gap-2 rounded-xl bg-flame px-5 py-3 text-sm font-semibold text-ink shadow-[0_0_20px_rgba(255,122,26,0.35)] transition-all hover:bg-flame-hot hover:scale-[1.02] active:scale-95 touch-manipulation cursor-pointer"
-                >
-                  <span>Open Application Form</span>
-                  <ArrowUpRight size={16} />
-                </a>
-
+              <div className="relative mt-7 flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="w-full sm:w-auto inline-flex min-h-[46px] items-center justify-center rounded-xl border border-white/10 px-4 py-2.5 text-xs font-mono text-ash hover:border-white/20 hover:text-bone transition-all cursor-pointer"
+                  className="min-h-12 rounded-full px-5 text-sm text-ash transition-colors hover:text-bone"
                 >
                   Back
                 </button>
+                <Button href={HACKATHON_DETAILS.registrationUrl} external className="justify-between">
+                  Open Application Form
+                </Button>
               </div>
             </motion.div>
           </div>

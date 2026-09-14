@@ -36,13 +36,13 @@ export function Cursor() {
   return (
     <motion.div
       aria-hidden="true"
-      className="site-cursor-halo pointer-events-none fixed hidden md:block"
+      className="pointer-events-none fixed z-[70] hidden md:block"
       style={{ left: sx, top: sy, translateX: "-50%", translateY: "-50%" }}
     >
       <motion.div
         animate={{ scale: hot ? 2.6 : 1, opacity: hot ? 0.5 : 0.28 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-        className="h-10 w-10 rounded-full bg-flame blur-[14px]"
+        className="h-5 w-5 rounded-full bg-flame blur-[7px]"
       />
     </motion.div>
   );

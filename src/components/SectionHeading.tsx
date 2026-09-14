@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { motion } from "framer-motion";
 import { Reveal } from "./Reveal";
 
 type Props = {
@@ -24,11 +25,16 @@ export function SectionHeading({ index, eyebrow, title, lead }: Props) {
       </Reveal>
 
       <div className="mt-7 grid gap-x-12 gap-y-6 md:grid-cols-[1.35fr_1fr] md:items-end">
-        <Reveal delay={0.05}>
-          <h2 className="max-w-none md:max-w-[18ch] text-balance text-[clamp(1.95rem,5.2vw,4.1rem)]">
-            {title}
-          </h2>
-        </Reveal>
+        {/* Mask wipe: the title rises out from behind its own baseline. */}
+        <motion.h2
+          initial={{ clipPath: "inset(0% 0% 100% 0%)", y: 28 }}
+          whileInView={{ clipPath: "inset(0% 0% -15% 0%)", y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.9, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+          className="max-w-none md:max-w-[18ch] text-balance text-[clamp(1.95rem,5.2vw,4.1rem)]"
+        >
+          {title}
+        </motion.h2>
 
         {lead && (
           <Reveal delay={0.1}>

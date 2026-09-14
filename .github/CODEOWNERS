@@ -1,0 +1,4 @@
+# Every change to the repository needs a review from the owner before it can
+# be merged into main. Enforced by the "Require review from Code Owners"
+# setting in the `main` ruleset (.github/rulesets/main.json).
+* @8BitsLife

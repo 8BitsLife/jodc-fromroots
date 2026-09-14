@@ -1,7 +1,7 @@
 import { Github, Instagram, Linkedin, ArrowUpRight } from "lucide-react";
 import { LINKS, NAV, SITE } from "../data/site";
 import { LogoMark } from "./LogoMark";
-import { JODCSignature } from "./JODCSignature";
+import { ContributionSignature } from "./ContributionSignature";
 import type { Route } from "../hooks/useRoute";
 
 interface FooterProps {
@@ -116,9 +116,9 @@ export function Footer({ onNavigate }: FooterProps) {
             </div>
           </div>
 
-          {/* Moving cursive sign of JODC */}
+          {/* Sign-off: the club name drawn in a contribution graph */}
           <div className="flex flex-col items-center justify-center pt-4 md:col-span-6 md:items-end md:pt-0 lg:col-span-3">
-            <JODCSignature />
+            <ContributionSignature />
           </div>
         </div>
 

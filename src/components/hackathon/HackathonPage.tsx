@@ -203,7 +203,7 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.25 }}
-      className="noise relative min-h-screen w-full max-w-full overflow-x-hidden bg-ink text-bone pt-[68px]"
+      className="noise relative min-h-screen w-full max-w-full overflow-x-hidden bg-transparent text-bone pt-[68px]"
     >
       {/* Dynamic Background Glows */}
       <div
@@ -253,9 +253,6 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
               <span className="uppercase tracking-widest font-semibold">Flagship Hackathon</span>
             </div>
 
-            <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-xs text-ash/80">
-              Campus Edition 2026
-            </span>
           </div>
         </Reveal>
 
@@ -356,7 +353,7 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
             <div className="relative">
               <div
                 aria-hidden="true"
-                className="absolute bottom-8 left-6 top-8 w-px bg-gradient-to-b from-flame/10 via-flame to-flame/10"
+                className="absolute bottom-8 -left-4 top-8 w-px bg-gradient-to-b from-flame/10 via-flame to-flame/10"
               />
               <div className="space-y-4">
                 {[

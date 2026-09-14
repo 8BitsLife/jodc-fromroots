@@ -11,7 +11,7 @@ export function Programs() {
     >
       <div className="mx-auto max-w-7xl">
         <SectionHeading
-          index="03"
+          index="04"
           eyebrow="Programs"
           title={
             <>

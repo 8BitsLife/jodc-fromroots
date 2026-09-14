@@ -11,7 +11,7 @@ export function Marquee() {
   return (
     <div
       aria-hidden="true"
-      className="group relative flex overflow-hidden border-y border-white/5 bg-ink-soft py-4 select-none cursor-default"
+      className="group relative flex overflow-hidden border-y border-white/5 bg-transparent py-4 select-none cursor-default"
     >
       <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 sm:w-24 bg-gradient-to-r from-ink-soft to-transparent" />
       <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 sm:w-24 bg-gradient-to-l from-ink-soft to-transparent" />

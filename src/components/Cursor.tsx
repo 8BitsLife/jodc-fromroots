@@ -36,7 +36,7 @@ export function Cursor() {
   return (
     <motion.div
       aria-hidden="true"
-      className="pointer-events-none fixed z-[90] hidden md:block"
+      className="site-cursor-halo pointer-events-none fixed hidden md:block"
       style={{ left: sx, top: sy, translateX: "-50%", translateY: "-50%" }}
     >
       <motion.div

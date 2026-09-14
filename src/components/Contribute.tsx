@@ -16,7 +16,7 @@ export function Contribute() {
   return (
     <section
       id="contribute"
-      className="relative scroll-mt-24 overflow-hidden border-t border-white/5 bg-ink-soft px-5 py-24 sm:px-8 sm:py-32"
+      className="relative scroll-mt-24 overflow-hidden border-t border-white/5 bg-transparent px-5 py-24 sm:px-8 sm:py-32"
     >
       <div
         aria-hidden="true"

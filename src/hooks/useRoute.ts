@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 
-export type Route = "home" | "repo-of-the-week" | "hackathon";
+export type Route = "home" | "repo-of-the-week" | "hackathon" | "team";
 
 function getRouteFromLocation(): Route {
   if (typeof window === "undefined") return "home";
@@ -19,6 +19,10 @@ function getRouteFromLocation(): Route {
     return "hackathon";
   }
 
+  if (hash.includes("team") || path.includes("team")) {
+    return "team";
+  }
+
   return "home";
 }
 
@@ -31,6 +35,8 @@ export function useRoute() {
       window.history.replaceState(null, "", "/repo-of-the-week");
     } else if (window.location.hash.includes("hackathon")) {
       window.history.replaceState(null, "", "/hackathon");
+    } else if (window.location.hash.includes("team")) {
+      window.history.replaceState(null, "", "/team");
     }
 
     const handleLocationChange = () => {
@@ -53,15 +59,27 @@ export function useRoute() {
     } else if (target === "hackathon") {
       window.history.pushState(null, "", "/hackathon");
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (target === "team") {
+      window.history.pushState(null, "", "/team");
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       if (sectionId) {
         window.history.pushState(null, "", `/#${sectionId}`);
       } else {
         window.history.pushState(null, "", "/");
-        window.scrollTo({ top: 0, behavior: "smooth" });
       }
     }
     setRoute(target);
+
+    if (target === "home") {
+      window.setTimeout(() => {
+        if (sectionId) {
+          document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      }, 90);
+    }
   }, []);
 
   return { route, navigate };

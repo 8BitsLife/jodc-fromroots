@@ -14,7 +14,7 @@ export function Leaderboard({
   onSelectRepo,
 }: LeaderboardProps) {
   const [query, setQuery] = useState("");
-  const [mobileExpanded, setMobileExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   const filteredRepos = useMemo(() => {
     if (!query.trim()) return repos;
@@ -33,7 +33,7 @@ export function Leaderboard({
       aria-label="Community Builders Leaderboard"
       className="w-full rounded-3xl border border-white/[0.08] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-xl shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
     >
-      <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between gap-3 pb-3.5">
         <div>
           <span className="font-mono text-[10px] uppercase tracking-widest text-flame block">
             Community
@@ -41,13 +41,25 @@ export function Leaderboard({
           <h3 className="font-display text-base font-semibold text-bone">
             Featured Builders
           </h3>
+          <p className="mt-1 text-xs leading-relaxed text-ash/70">
+            Open the community list when you want to explore builders.
+          </p>
         </div>
-        <span className="font-mono text-[11px] text-ash/60">
-          {filteredRepos.length} / {repos.length}
-        </span>
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          aria-expanded={expanded}
+          className="shrink-0 rounded-full border border-flame/35 bg-flame/10 px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-wider text-flame transition-all hover:bg-flame hover:text-ink touch-manipulation"
+        >
+          {expanded ? "Close" : "Explore"}
+        </button>
       </div>
 
-      {/* Interactive Quick Search Bar */}
+      {expanded && (
+        <>
+          <div className="mb-3 border-t border-white/[0.06] pt-3" />
+
+          {/* Interactive Quick Search Bar */}
       <div className="mt-3 relative">
         <Search
           size={12}
@@ -74,9 +86,7 @@ export function Leaderboard({
 
       {/* Compact, responsive and touch-friendly scrollable list */}
       <div
-        className={`mt-3 ${
-          mobileExpanded ? "max-h-none" : "max-h-[290px]"
-        } sm:max-h-[300px] overflow-y-auto pr-1 space-y-1 no-scrollbar scroll-smooth touch-pan-y [-webkit-overflow-scrolling:touch]`}
+        className="mt-3 max-h-[300px] overflow-y-auto pr-1 space-y-1 no-scrollbar scroll-smooth touch-pan-y [-webkit-overflow-scrolling:touch]"
       >
         {filteredRepos.length === 0 ? (
           <div className="py-8 text-center text-xs font-mono text-ash/60">
@@ -151,17 +161,7 @@ export function Leaderboard({
         )}
       </div>
 
-      {/* Mobile Toggle to expand or collapse builder list without scroll trapping */}
-      {filteredRepos.length > 4 && (
-        <div className="sm:hidden pt-3 mt-2 border-t border-white/[0.06] text-center">
-          <button
-            type="button"
-            onClick={() => setMobileExpanded(!mobileExpanded)}
-            className="inline-flex items-center gap-1.5 font-mono text-xs text-flame hover:text-flame-hot transition-colors py-1.5 px-4 rounded-xl border border-flame/30 bg-flame/10 touch-manipulation cursor-pointer"
-          >
-            {mobileExpanded ? "Show compact list" : `View all ${filteredRepos.length} builders`}
-          </button>
-        </div>
+        </>
       )}
     </aside>
   );

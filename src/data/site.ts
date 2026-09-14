@@ -26,8 +26,8 @@ export const SITE = {
 
 export const LINKS = {
   instagram: "https://www.instagram.com/jodc128/",
-  // TODO(contributors): point these at the club's real handles.
-  github: "https://github.com/jodc128",
+  github: "https://github.com/JIITODC",
+  linkedin: "https://www.linkedin.com/company/jodc/",
   discord: "#join",
   email: "mailto:jodc@jiit.ac.in",
 } as const;
@@ -38,6 +38,7 @@ export const NAV: NavItem[] = [
   { label: "About", href: "#about" },
   { label: "What we do", href: "#what-we-do" },
   { label: "Contribute", href: "#contribute" },
+  { label: "Events", href: "#events" },
   { label: "Programs", href: "#programs" },
   { label: "Hackathon", href: "#hackathon" },
   { label: "Join", href: "#join" },

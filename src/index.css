@@ -179,3 +179,478 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ── Global scroll / background polish ───────────────────────────────────── */
+.site-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(900px 620px at 8% calc(4% + 2vh), rgba(255,122,26,.085), transparent 68%),
+    radial-gradient(760px 560px at 92% calc(26% + 2vh), rgba(255,154,60,.055), transparent 70%),
+    radial-gradient(980px 700px at 50% calc(72% + 3vh), rgba(255,122,26,.035), transparent 72%),
+    linear-gradient(180deg, #09090b 0%, #08080a 48%, #09090c 100%);
+  transform: translateZ(0);
+  will-change: transform;
+  transition: opacity 900ms cubic-bezier(.16,1,.3,1), filter 900ms cubic-bezier(.16,1,.3,1);
+}
+
+.site-atmosphere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .48;
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,.032) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,.032) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: linear-gradient(to bottom, black 0%, black 82%, transparent 100%);
+}
+
+.site-atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  background: radial-gradient(ellipse at center, transparent 28%, rgba(0,0,0,.30) 100%);
+}
+
+/* One continuous canvas: section boundaries use hairlines, not opaque blocks. */
+main section.bg-ink,
+main section.bg-ink-soft {
+  background-color: transparent !important;
+  backdrop-filter: none;
+}
+
+/* Keep the entire landing page on one continuous visual canvas. */
+.home-page-canvas,
+.route-page-canvas {
+  background: transparent;
+}
+
+/* Route pages use the same atmospheric canvas as Home rather than a hard black slab. */
+.route-page-canvas {
+  min-height: 100dvh;
+}
+
+.route-page-canvas > main {
+  background: transparent !important;
+}
+
+
+/* Give every major section a soft edge instead of a sudden background change. */
+main > section:not(.join-section)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(8,8,10,.025), rgba(8,8,10,0));
+  opacity: .8;
+}
+
+
+.team-page-bg {
+  background:
+    radial-gradient(500px 320px at 10% 12%, rgba(255,122,26,.11), transparent 70%),
+    radial-gradient(500px 350px at 90% 25%, rgba(255,154,60,.07), transparent 72%),
+    linear-gradient(180deg, rgba(8,8,10,.15), rgba(8,8,10,.82));
+}
+
+.team-feature {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05), 0 30px 100px rgba(0,0,0,.22);
+}
+
+
+/* Team profile sizing tuned to the reference layout: wide glass card,
+   balanced portrait/text proportions, and a compact vertical footprint. */
+.team-feature {
+  min-height: 560px;
+  padding: 3.25rem 3.75rem;
+}
+
+@media (min-width: 1024px) {
+  .team-feature > div.relative.grid {
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: 4.25rem;
+  }
+
+  .team-feature .team-portrait-ring {
+    width: 320px;
+    max-width: 100%;
+    margin-inline: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .team-feature {
+    min-height: auto;
+    padding: 1.5rem;
+  }
+}
+
+.team-portrait-ring {
+  background: conic-gradient(from 210deg, #9b5de5, #ff7a1a 34%, #ffb000 62%, #8bc34a 84%, #9b5de5);
+  box-shadow: 0 0 40px rgba(255,122,26,.10), 0 0 0 1px rgba(255,255,255,.08);
+}
+
+.team-name-gradient {
+  background: linear-gradient(90deg, #ff6431 0%, #ff9d22 34%, #72b83f 67%, #4f8ff7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.team-tabs {
+  display: flex;
+  justify-content: center;
+  gap: clamp(1rem, 5vw, 4rem);
+}
+
+.team-tab-icon {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 999px;
+  background: rgba(255,255,255,.035);
+  color: currentColor;
+  transition: border-color .3s ease, background .3s ease, transform .3s ease;
+}
+
+.team-tab-active .team-tab-icon {
+  border-color: rgba(255,122,26,.55);
+  background: rgba(255,122,26,.10);
+  transform: translateY(-1px);
+}
+
+
+.team-tab {
+  position: relative;
+  min-height: 66px;
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  padding: 0 .25rem;
+  color: rgba(245,245,244,.46);
+  font-family: var(--font-display);
+  font-size: clamp(.95rem, 2vw, 1.15rem);
+  font-weight: 600;
+  transition: color .3s ease;
+}
+
+.team-tab:hover { color: rgba(245,245,244,.85); }
+.team-tab-active { color: var(--color-bone); }
+.team-tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: center;
+  background: var(--color-flame);
+  box-shadow: 0 0 16px rgba(255,122,26,.7);
+  transition: transform .35s cubic-bezier(.16,1,.3,1);
+}
+.team-tab-active::after { transform: scaleX(1); }
+.team-tab-dot { display: none; }
+
+.team-step-line {
+  position: absolute;
+  left: 9%;
+  top: 50%;
+  bottom: 50%;
+  width: 1px;
+  height: 118px;
+  transform: translateY(-50%);
+  background: linear-gradient(to bottom, transparent, rgba(255,122,26,.72), transparent);
+  box-shadow: 0 0 18px rgba(255,122,26,.18);
+  pointer-events: none;
+}
+
+.team-step-dot {
+  position: absolute;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255,122,26,.8);
+  border-radius: 999px;
+  background: var(--color-ink);
+  box-shadow: 0 0 10px rgba(255,122,26,.35);
+}
+.team-step-dot:nth-child(1) { top: 0; }
+.team-step-dot:nth-child(2) { top: 50%; }
+.team-step-dot:nth-child(3) { top: 100%; }
+
+.team-rail { min-height: 160px; }
+.team-avatar {
+  width: clamp(72px, 8vw, 116px);
+  height: clamp(72px, 8vw, 116px);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.10);
+  opacity: .34;
+  filter: grayscale(1) brightness(.7);
+  transform: scale(.88);
+  transition: opacity .4s ease, filter .4s ease, transform .45s cubic-bezier(.16,1,.3,1), border-color .4s ease;
+}
+.team-avatar:hover { opacity: .72; filter: grayscale(.35) brightness(.9); transform: scale(.94); }
+.team-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.team-avatar-active {
+  width: clamp(112px, 11vw, 148px);
+  height: clamp(112px, 11vw, 148px);
+  opacity: 1;
+  filter: grayscale(0) brightness(1);
+  border: 2px solid var(--color-bone);
+  box-shadow: 0 0 0 3px rgba(255,122,26,.55), 0 0 35px rgba(255,122,26,.18);
+  transform: scale(1);
+}
+
+.team-arrow {
+  position: absolute;
+  top: 50%;
+  z-index: 3;
+  display: flex;
+  width: 52px;
+  height: 52px;
+  transform: translateY(-50%);
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 999px;
+  background: rgba(255,255,255,.035);
+  color: var(--color-bone);
+  backdrop-filter: blur(12px);
+  transition: border-color .3s ease, background .3s ease, color .3s ease, transform .3s ease;
+}
+.team-arrow:hover { border-color: rgba(255,122,26,.55); background: rgba(255,122,26,.10); color: var(--color-flame); transform: translateY(-50%) scale(1.05); }
+
+.jodc-signature { position: relative; width: min(100%, 430px); color: var(--color-bone); filter: drop-shadow(0 0 12px rgba(255,122,26,.08)); }
+.jodc-signature-glow { position: absolute; left: 8%; top: 8%; width: 84%; height: 68%; border-radius: 50%; background: radial-gradient(circle, rgba(255,122,26,.20), transparent 68%); filter: blur(32px); pointer-events: none; animation: signature-breathe 3.8s ease-in-out infinite; }
+
+@keyframes signature-breathe {
+  0%, 100% { opacity: .55; transform: scale(.94); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+
+@media (max-width: 640px) {
+  .team-tabs { justify-content: space-between; gap: .5rem; }
+  .team-tab { font-size: .85rem; min-height: 62px; gap: .35rem; }
+  .team-tab-icon { width: 24px; height: 24px; }
+  .team-rail { gap: .65rem; padding-left: 3.8rem; padding-right: 3.8rem; }
+  .team-avatar:not(.team-avatar-active) { width: 62px; height: 62px; }
+  .team-avatar:nth-child(1), .team-avatar:nth-child(5) { display: none; }
+  .team-arrow { width: 42px; height: 42px; }
+  .team-step-line { left: 4%; height: 92px; }
+  .jodc-signature { width: min(100%, 360px); }
+  .jodc-signature svg { max-height: 150px; }
+}
+
+
+/* Glass navigation: content can move behind it without reducing legibility. */
+.site-nav-shell {
+  isolation: isolate;
+  background: rgba(8,8,10,.34);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: 0 8px 36px rgba(0,0,0,.12);
+  transition: background .45s ease, box-shadow .45s ease, border-color .45s ease;
+}
+
+.site-nav-shell.is-scrolled {
+  background: rgba(8,8,10,.56);
+  backdrop-filter: blur(30px) saturate(165%);
+  -webkit-backdrop-filter: blur(30px) saturate(165%);
+  box-shadow: 0 14px 46px rgba(0,0,0,.34), inset 0 -1px 0 rgba(255,255,255,.055);
+}
+
+/* Keep the decorative mouse halo below the navigation and away from copy. */
+.site-cursor-halo { z-index: 60 !important; }
+
+@media (max-width: 640px) {
+  .site-nav-shell {
+    background: rgba(8,8,10,.50);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+  }
+
+  .site-nav-shell.is-scrolled {
+    background: rgba(8,8,10,.62);
+    backdrop-filter: blur(28px) saturate(160%);
+    -webkit-backdrop-filter: blur(28px) saturate(160%);
+  }
+}
+
+@media (max-width: 900px) {
+  .team-step-line { left: 2.5%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jodc-signature-glow { animation: none; }
+}
+
+
+
+/* A single fixed visual canvas prevents hard colour seams between sections. */
+
+/* Keep the canvas visually continuous into contact/footer. */
+main > section,
+footer {
+  background-color: transparent;
+}
+
+@media (max-width: 767px) {
+  .site-nav-shell nav { height: 66px; }
+  .team-feature { border-radius: 22px; }
+  .team-rail { overflow-x: auto; scroll-snap-type: x mandatory; justify-content: flex-start; }
+  .team-avatar { scroll-snap-align: center; }
+  .team-tabs { overflow-x: auto; justify-content: flex-start; padding-inline: .25rem; }
+  .team-tab { flex: 0 0 auto; }
+  .jodc-signature { width: min(100%, 360px); }
+}
+
+/* ── Hero scroll cue: part of the CTA row, never floating over content ── */
+.hero-scroll-cue-static {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Stronger glass treatment while the page is moving beneath the navbar. */
+.site-nav-shell.is-scrolled {
+  background: rgba(8, 8, 10, 0.72);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  box-shadow:
+    0 18px 55px rgba(0, 0, 0, 0.44),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.075);
+}
+
+.site-nav-shell.is-scrolled::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(8,8,10,.20));
+}
+
+.site-nav-shell.is-scrolled nav {
+  position: relative;
+  z-index: 1;
+}
+
+/* Keep the background one continuous visual surface from hero to footer. */
+.site-atmosphere {
+  background:
+    radial-gradient(900px 620px at 8% 8%, rgba(255,122,26,.075), transparent 68%),
+    radial-gradient(760px 560px at 92% 30%, rgba(255,154,60,.05), transparent 70%),
+    radial-gradient(980px 700px at 50% 72%, rgba(255,122,26,.035), transparent 72%),
+    linear-gradient(180deg, #09090b 0%, #08080a 48%, #09090c 100%);
+}
+
+/* Event cards share the same glass/grid language as Team and the navbar. */
+#events article {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 24px 70px rgba(0,0,0,.12);
+}
+
+@media (max-width: 639px) {
+  .hero-scroll-cue-static > div {
+    height: 34px;
+    width: 22px;
+  }
+
+  .hero-scroll-cue-static span:last-child {
+    font-size: 7px;
+  }
+
+  .site-nav-shell.is-scrolled {
+    background: rgba(8,8,10,.76);
+    backdrop-filter: blur(34px) saturate(175%);
+    -webkit-backdrop-filter: blur(34px) saturate(175%);
+  }
+}
+
+/* ── Home background art: one continuous, low-contrast surface ──────────── */
+.home-background-art {
+  position: fixed;
+  inset: 0;
+  z-index: -9;
+  pointer-events: none;
+  background-image:
+    linear-gradient(180deg, rgba(8,8,10,.26) 0%, rgba(8,8,10,.48) 42%, rgba(8,8,10,.74) 100%),
+    url('/events-background.png');
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+  opacity: .58;
+  filter: saturate(.78) brightness(.72) contrast(.96);
+  transform: translateZ(0) scale(1.012);
+  will-change: transform, opacity;
+  transition: opacity 1.2s cubic-bezier(.16,1,.3,1), filter 1.2s cubic-bezier(.16,1,.3,1);
+}
+
+.home-background-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 8% 8%, rgba(255,122,26,.12), transparent 24%),
+    radial-gradient(circle at 88% 18%, rgba(255,154,60,.055), transparent 30%),
+    linear-gradient(180deg, rgba(8,8,10,.08), rgba(8,8,10,.22) 55%, rgba(8,8,10,.55));
+}
+
+.home-background-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,.10), transparent 18%, transparent 82%, rgba(0,0,0,.13));
+  box-shadow: inset 0 0 160px rgba(0,0,0,.42);
+}
+
+/* Sections never swap opaque backgrounds; the fixed art remains visible and
+   the overlays fade imperceptibly as content moves over the same surface. */
+.home-page-canvas main,
+.home-page-canvas footer {
+  position: relative;
+  background: transparent !important;
+}
+
+.home-page-canvas main > section {
+  isolation: isolate;
+}
+
+.home-page-canvas main > section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(8,8,10,.018), rgba(8,8,10,.045));
+}
+
+@media (max-width: 767px) {
+  .home-background-art {
+    background-position: 58% top;
+    opacity: .48;
+    filter: saturate(.72) brightness(.62) contrast(.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-background-art {
+    transition: none;
+    transform: none;
+  }
+}

@@ -1,10 +1,9 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform, type Variants } from "framer-motion";
-import { Flame, ArrowUpRight, Instagram } from "lucide-react";
+import { Flame, ArrowUpRight } from "lucide-react";
 import { HeroBackdrop } from "./HeroBackdrop";
 import { MagneticButton } from "./MagneticButton";
-import { LINKS, SITE } from "../data/site";
-import { LEADERBOARD_REPOS } from "../data/repoOfTheWeek";
+import { SITE } from "../data/site";
 
 const HEADLINE = ["Build", "in", "the", "open."];
 
@@ -20,11 +19,7 @@ const rise: Variants = {
   }),
 };
 
-interface HeroProps {
-  onExploreRepo?: () => void;
-}
-
-export function Hero({ onExploreRepo }: HeroProps) {
+export function Hero() {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -45,49 +40,13 @@ export function Hero({ onExploreRepo }: HeroProps) {
 
       <motion.div
         style={{ y, opacity }}
-        className="relative z-10 mx-auto w-full max-w-7xl px-5 py-16 sm:px-8"
+        className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center px-5 py-16 pb-28 text-center sm:px-8 sm:py-16 sm:pb-32"
       >
-        <div className="flex flex-wrap items-center gap-3">
-          <motion.a
-            href={LINKS.instagram}
-            target="_blank"
-            rel="noreferrer noopener"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] py-2 pl-3 pr-4 text-xs text-ash backdrop-blur-sm transition-colors hover:border-flame/50 hover:text-bone"
-          >
-            <span className="relative flex h-2 w-2">
-              <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-flame" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-flame" />
-            </span>
-            Student-run at {SITE.campus}
-            <Instagram size={13} aria-hidden="true" />
-          </motion.a>
 
-          {onExploreRepo && (
-            <motion.button
-              type="button"
-              onClick={onExploreRepo}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-flame/40 bg-flame/10 py-2 pl-3 pr-4 text-xs font-mono text-flame backdrop-blur-sm transition-all hover:bg-flame hover:text-ink hover:border-flame group cursor-pointer"
-            >
-              <Flame size={13} className="text-flame group-hover:text-ink transition-colors" />
-              <span>
-                Repo of the Week:{" "}
-                <strong className="font-mono text-bone group-hover:text-ink transition-colors">
-                  {LEADERBOARD_REPOS[0]?.name ?? "superset"}
-                </strong>
-              </span>
-            </motion.button>
-          )}
-        </div>
 
         <h1
           aria-label="Build in the open."
-          className="mt-6 sm:mt-7 text-[clamp(2.35rem,8.6vw,7.5rem)] font-semibold leading-[0.96] tracking-[-0.045em]"
+          className="mt-6 sm:mt-7 text-center text-[clamp(2.35rem,8.6vw,7.5rem)] font-semibold leading-[0.96] tracking-[-0.045em]"
         >
           {HEADLINE.map((word, i) => (
             <span
@@ -111,7 +70,7 @@ export function Hero({ onExploreRepo }: HeroProps) {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6 sm:mt-7 max-w-xl text-pretty text-base leading-relaxed text-ash sm:text-lg"
+          className="mx-auto mt-6 max-w-xl text-pretty text-center text-base leading-relaxed text-ash sm:mt-7 sm:text-lg"
         >
           {SITE.tagline}
         </motion.p>
@@ -120,12 +79,13 @@ export function Hero({ onExploreRepo }: HeroProps) {
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.68, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-8 sm:mt-9 flex flex-wrap items-center gap-3"
+          className="mt-8 flex w-full flex-wrap items-center justify-center gap-3 sm:mt-9 sm:gap-4"
         >
           <MagneticButton href="#contribute">
             Start contributing
             <ArrowUpRight size={16} aria-hidden="true" />
           </MagneticButton>
+
           <MagneticButton href="#what-we-do" variant="ghost">
             <Flame size={16} aria-hidden="true" />
             See what we do
@@ -133,39 +93,46 @@ export function Hero({ onExploreRepo }: HeroProps) {
         </motion.div>
 
         <motion.dl
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.95, duration: 0.9 }}
-          className="mt-12 sm:mt-16 grid grid-cols-1 xs:grid-cols-3 gap-5 sm:gap-6 border-t border-white/10 pt-8 max-w-2xl"
+          className="mt-12 grid w-full max-w-4xl grid-cols-1 border-y border-white/10 sm:mt-16 sm:grid-cols-3"
         >
           {[
             ["Contribute", "to live upstream projects"],
             ["Collaborate", "with people who review your code"],
             ["Mentor", "and get mentored, one-to-one"],
-          ].map(([term, desc]) => (
-            <div key={term} className="group/item">
+          ].map(([term, desc], i) => (
+            <div
+              key={term}
+              className={`group/item px-0 py-5 sm:px-6 sm:py-6 ${
+                i > 0 ? "border-t border-white/10 sm:border-t-0 sm:border-l" : ""
+              } border-white/10`}
+            >
               <dt className="kicker text-flame transition-colors group-hover/item:text-flame-hot">{term}</dt>
-              <dd className="mt-1 text-xs sm:text-sm text-ash leading-relaxed">{desc}</dd>
+              <dd className="mt-1.5 max-w-xs text-xs leading-relaxed text-ash sm:text-sm">{desc}</dd>
             </div>
           ))}
         </motion.dl>
+
+        {/* The scroll cue sits below the Collaborate card, outside the stats box. */}
+        <motion.div
+          aria-hidden="true"
+          className="hero-scroll-cue-static mt-5 flex items-center justify-center gap-2 sm:mt-6"
+          animate={{ opacity: [0.58, 1, 0.58] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div className="flex h-9 w-6 items-start justify-center rounded-full border border-white/20 bg-black/20 p-1.5 backdrop-blur-md">
+            <motion.span
+              animate={{ y: [0, 10, 0], opacity: [1, 0.25, 1] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              className="h-2.5 w-1 rounded-full bg-flame shadow-[0_0_12px_rgba(255,122,26,.95)]"
+            />
+          </div>
+          <span className="font-mono text-[8px] uppercase tracking-[0.2em] text-ash">Scroll Down</span>
+        </motion.div>
       </motion.div>
 
-      <motion.div
-        aria-hidden="true"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.4 }}
-        className="absolute bottom-6 left-1/2 z-10 hidden -translate-x-1/2 sm:block"
-      >
-        <div className="flex h-11 w-7 items-start justify-center rounded-full border border-white/15 p-1.5">
-          <motion.span
-            animate={{ y: [0, 12, 0], opacity: [1, 0.2, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="h-2 w-1 rounded-full bg-flame"
-          />
-        </div>
-      </motion.div>
     </section>
   );
 }

@@ -151,14 +151,16 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
         >
           <nav
             aria-label="Primary"
-            className={`flex items-center justify-between gap-3 transition-[height,padding] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            // Three columns with equal outer tracks keep the links on the true centre line,
+            // however wide the logo and the buttons on either side are.
+            className={`grid grid-cols-[1fr_auto] items-center gap-3 transition-[height,padding] duration-500 lg:grid-cols-[1fr_auto_1fr] ease-[cubic-bezier(0.16,1,0.3,1)] ${
               floating ? "h-14 pl-3 pr-2 sm:pl-4" : "h-[72px] px-2 sm:px-3"
             }`}
           >
             <a
               href="/"
               onClick={goHome}
-              className="group flex min-h-[44px] shrink-0 items-center gap-2.5 rounded-full text-bone"
+              className="group flex min-h-[44px] w-fit shrink-0 items-center gap-2.5 rounded-full text-bone"
               aria-label={`${SITE.name} home`}
             >
               <span
@@ -173,7 +175,13 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
               </span>
             </a>
 
-            <ul className="hidden items-center gap-0.5 lg:flex">
+            {/* At the top of the page the links sit on their own faint track; once the
+                bar lifts into the glass capsule the track dissolves into it. */}
+            <ul
+              className={`hidden items-center gap-0.5 rounded-full p-1 transition-[background-color,box-shadow] duration-500 lg:flex ${
+                floating ? "bg-transparent shadow-none" : "bg-white/[0.03] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-md"
+              }`}
+            >
               {/* Home and its sections. Opens on hover and keyboard focus; the
                   padded wrapper bridges the gap so it doesn't close mid-travel. */}
               <li
@@ -302,7 +310,7 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
               })}
             </ul>
 
-            <div className="flex shrink-0 items-center gap-1.5">
+            <div className="flex shrink-0 items-center justify-end gap-1.5">
               <a
                 href={LINKS.github}
                 target="_blank"

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Star, ChevronRight, Search, X } from "lucide-react";
+import { Star, ChevronDown, Search, X } from "lucide-react";
 import type { LeaderboardRepo } from "../../data/repoOfTheWeek";
 
 interface LeaderboardProps {
@@ -8,157 +8,122 @@ interface LeaderboardProps {
   onSelectRepo: (id: string) => void;
 }
 
-export function Leaderboard({
-  repos,
-  selectedRepoId,
-  onSelectRepo,
-}: LeaderboardProps) {
+export function Leaderboard({ repos, selectedRepoId, onSelectRepo }: LeaderboardProps) {
   const [query, setQuery] = useState("");
-  const [expanded, setExpanded] = useState(false);
+  // Open beside the spotlight on desktop; on smaller screens it waits to be asked,
+  // since the swipe strip above already handles picking a week there.
+  const [expanded, setExpanded] = useState(() => window.matchMedia("(min-width: 1024px)").matches);
 
   const filteredRepos = useMemo(() => {
-    if (!query.trim()) return repos;
     const q = query.toLowerCase().trim();
+    if (!q) return repos;
     return repos.filter(
       (r) =>
         r.builder.name.toLowerCase().includes(q) ||
         r.name.toLowerCase().includes(q) ||
         r.tags.some((t) => t.toLowerCase().includes(q)) ||
-        r.languages.some((l) => l.name.toLowerCase().includes(q))
+        r.languages.some((l) => l.name.toLowerCase().includes(q)),
     );
   }, [repos, query]);
 
   return (
-    <aside
-      aria-label="Community Builders Leaderboard"
-      className="w-full rounded-3xl border border-white/[0.08] bg-white/[0.02] p-4 sm:p-5 backdrop-blur-xl shadow-[0_15px_35px_rgba(0,0,0,0.5)]"
-    >
-      <div className="flex items-center justify-between gap-3 pb-3.5">
-        <div>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-flame block">
-            Community
+    <aside aria-label="All spotlights" className="overflow-hidden rounded-3xl bg-white/[0.02] ring-1 ring-inset ring-white/[0.08]">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-controls="leaderboard-list"
+        className="flex w-full items-center justify-between gap-3 p-5 text-left"
+      >
+        <span>
+          <span className="kicker block text-flame">Leaderboard</span>
+          <span className="mt-1.5 block text-lg font-medium tracking-tight text-bone">All spotlights</span>
+          <span className="mt-0.5 block font-mono text-[11px] text-ash">
+            {query ? `${filteredRepos.length} of ${repos.length}` : `${repos.length} weeks`}
           </span>
-          <h3 className="font-display text-base font-semibold text-bone">
-            Featured Builders
-          </h3>
-          <p className="mt-0.5 font-mono text-[11px] text-ash/60">
-            {expanded ? `${filteredRepos.length} / ${repos.length}` : `${repos.length} builders`}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setExpanded((value) => !value)}
-          aria-expanded={expanded}
-          aria-controls="leaderboard-list"
-          className="min-h-[44px] shrink-0 rounded-full border border-flame/35 bg-flame/10 px-4 font-mono text-[10px] font-semibold uppercase tracking-wider text-flame transition-all hover:bg-flame hover:text-ink touch-manipulation"
+        </span>
+        <span
+          aria-hidden="true"
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-1 ring-inset transition-all duration-300 ${
+            expanded ? "rotate-180 bg-white/[0.06] text-bone ring-white/15" : "text-ash ring-white/10"
+          }`}
         >
-          {expanded ? "Close" : "Explore"}
-        </button>
-      </div>
+          <ChevronDown size={16} />
+        </span>
+      </button>
 
       {expanded && (
-        <div id="leaderboard-list" className="border-t border-white/[0.06] pt-3">
-          {/* Interactive Quick Search Bar */}
-          <div className="relative">
-            <Search
-              size={12}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ash/50 pointer-events-none"
-            />
+        <div id="leaderboard-list" className="border-t border-white/[0.06] p-3">
+          <label className="relative block">
+            <span className="sr-only">Filter by repo, builder, tag or language</span>
+            <Search size={13} aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ash" />
             <input
-              type="text"
+              type="search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Filter builder or stack..."
-              className="w-full rounded-lg border border-white/10 bg-white/[0.03] pl-8 pr-7 py-1.5 font-mono text-xs text-bone placeholder:text-ash/40 focus:border-flame/50 focus:bg-white/[0.05] focus:outline-none transition-all"
+              placeholder="Filter repo, builder or stack"
+              className="h-10 w-full rounded-xl bg-white/[0.03] pl-9 pr-9 font-mono text-xs text-bone ring-1 ring-inset ring-white/10 transition-shadow placeholder:text-ash/60 focus:outline-none focus:ring-flame/50 [&::-webkit-search-cancel-button]:hidden"
             />
             {query && (
               <button
                 type="button"
                 onClick={() => setQuery("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-ash/60 hover:text-bone cursor-pointer p-0.5"
                 aria-label="Clear filter"
+                className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg text-ash hover:bg-white/[0.06] hover:text-bone"
               >
-                <X size={12} />
+                <X size={13} aria-hidden="true" />
               </button>
             )}
-          </div>
+          </label>
 
-          {/* Compact, responsive and touch-friendly scrollable list */}
-          <div
-            className="mt-3 max-h-[300px] overflow-y-auto pr-1 space-y-1 no-scrollbar scroll-smooth touch-pan-y [-webkit-overflow-scrolling:touch]"
-          >
+          <ol className="mt-2 max-h-[22rem] space-y-0.5 overflow-y-auto no-scrollbar">
             {filteredRepos.length === 0 ? (
-              <div className="py-8 text-center text-xs font-mono text-ash/60">
-                <p>No builders matched &quot;{query}&quot;</p>
-                <button
-                  type="button"
-                  onClick={() => setQuery("")}
-                  className="mt-2 inline-flex items-center gap-1 text-flame hover:underline cursor-pointer"
-                >
-                  Clear search
+              <li className="px-3 py-8 text-center font-mono text-xs text-ash">
+                Nothing matches &ldquo;{query}&rdquo;.{" "}
+                <button type="button" onClick={() => setQuery("")} className="text-flame hover:underline">
+                  Clear
                 </button>
-              </div>
+              </li>
             ) : (
               filteredRepos.map((repo) => {
                 const isSelected = repo.id === selectedRepoId;
-
                 return (
-                  <button
-                    key={repo.id}
-                    type="button"
-                    onClick={() => onSelectRepo(repo.id)}
-                    className={`group w-full flex items-center justify-between rounded-xl px-3 py-2.5 sm:py-2 text-left transition-all duration-200 border cursor-pointer touch-manipulation min-h-[44px] ${
-                      isSelected
-                        ? "border-flame/40 bg-flame/[0.08] text-bone shadow-[0_0_15px_rgba(255,122,26,0.12)]"
-                        : "border-transparent bg-transparent text-ash hover:border-white/10 hover:bg-white/[0.03] hover:text-bone"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span
-                        className={`font-mono text-[11px] font-bold w-5 shrink-0 ${
-                          isSelected ? "text-flame" : "text-ash/50 group-hover:text-ash"
-                        }`}
-                      >
+                  <li key={repo.id}>
+                    <button
+                      type="button"
+                      onClick={() => onSelectRepo(repo.id)}
+                      aria-current={isSelected ? "true" : undefined}
+                      className={`group relative flex min-h-[3.25rem] w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors ${
+                        isSelected ? "bg-flame/[0.08]" : "hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      {isSelected && <span aria-hidden="true" className="absolute inset-y-2.5 left-0 w-0.5 rounded-full bg-flame" />}
+                      <span className={`w-6 shrink-0 font-mono text-[11px] ${isSelected ? "text-flame" : "text-ash"}`}>
                         {String(repo.rank).padStart(2, "0")}
                       </span>
 
-                      <div className="min-w-0">
-                        {/* Builder Name displayed as main title */}
-                        <div
-                          className={`font-display text-xs sm:text-sm font-semibold truncate transition-colors ${
-                            isSelected ? "text-flame font-bold" : "text-bone group-hover:text-flame"
-                          }`}
-                        >
-                          {repo.builder.name}
-                        </div>
-                        {/* Repo Name displayed as secondary detail */}
-                        <div className="font-mono text-[10px] text-ash/70 truncate flex items-center gap-1">
-                          <span>{repo.name}</span>
-                          <span className="text-white/20">&bull;</span>
-                          <span className="text-[9px] text-ash/50">{repo.languages[0]?.name}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 ml-2">
-                      <span className="flex items-center gap-1 font-mono text-[10px] text-ash/70">
-                        <Star size={10} className={isSelected ? "text-flame fill-flame" : "text-ash/40"} />
-                        {repo.stars.toLocaleString()}
+                      <span className="min-w-0 flex-1">
+                        <span className={`block truncate font-mono text-sm font-semibold ${isSelected ? "text-flame" : "text-bone group-hover:text-flame"}`}>
+                          {repo.name}
+                        </span>
+                        <span className="mt-0.5 flex items-center gap-1.5 truncate font-mono text-[10px] text-ash">
+                          <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: repo.languages[0]?.color }} />
+                          <span className="truncate">{repo.builder.name}</span>
+                          <span aria-hidden="true" className="text-white/20">·</span>
+                          <span className="shrink-0">{repo.week}</span>
+                        </span>
                       </span>
-                      <ChevronRight
-                        size={12}
-                        className={`transition-transform ${
-                          isSelected
-                            ? "text-flame translate-x-0.5"
-                            : "text-ash/30 group-hover:text-ash/60 group-hover:translate-x-0.5"
-                        }`}
-                      />
-                    </div>
-                  </button>
+
+                      <span className="flex shrink-0 items-center gap-1 font-mono text-[11px] tabular-nums text-ash">
+                        <Star size={11} aria-hidden="true" className={isSelected ? "fill-flame text-flame" : ""} />
+                        {repo.stars >= 1000 ? `${(repo.stars / 1000).toFixed(1)}k` : repo.stars}
+                      </span>
+                    </button>
+                  </li>
                 );
               })
             )}
-          </div>
+          </ol>
         </div>
       )}
     </aside>

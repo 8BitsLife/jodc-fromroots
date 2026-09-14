@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from "react";
-import { Star, ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Star, ArrowUpRight, ArrowLeft, ArrowRight } from "lucide-react";
 import type { LeaderboardRepo } from "../../data/repoOfTheWeek";
 
 interface PreviousSpotlightsProps {
@@ -8,291 +9,184 @@ interface PreviousSpotlightsProps {
   onSelectRepo: (id: string) => void;
 }
 
-export function PreviousSpotlights({
-  repos,
-  currentRepoId,
-  onSelectRepo,
-}: PreviousSpotlightsProps) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+const weekNumber = (r: LeaderboardRepo) => parseInt(r.week.replace(/\D/g, ""), 10) || 0;
+
+export function PreviousSpotlights({ repos, currentRepoId, onSelectRepo }: PreviousSpotlightsProps) {
+  const trackRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  // Drag-to-scroll state
-  const isMouseDown = useRef(false);
-  const startX = useRef(0);
-  const scrollLeftStart = useRef(0);
-  const hasDragged = useRef(false);
+  // Drag to scroll with a mouse; a drag never counts as a click on a card.
+  const drag = useRef({ down: false, startX: 0, startLeft: 0, moved: false });
 
-  // Check scroll boundary state to toggle button enablement & edge fades
-  const checkScrollBoundaries = useCallback(() => {
-    const el = scrollContainerRef.current;
+  const ordered = useMemo(() => [...repos].sort((a, b) => weekNumber(b) - weekNumber(a)), [repos]);
+
+  const syncEdges = useCallback(() => {
+    const el = trackRef.current;
     if (!el) return;
-
-    const atLeft = el.scrollLeft <= 5;
-    const atRight = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
-
-    setCanScrollLeft(!atLeft);
-    setCanScrollRight(!atRight);
+    setCanScrollLeft(el.scrollLeft > 4);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   }, []);
 
   useEffect(() => {
-    checkScrollBoundaries();
-    const el = scrollContainerRef.current;
+    syncEdges();
+    const el = trackRef.current;
     if (!el) return;
-
-    const handleScroll = () => {
-      checkScrollBoundaries();
-    };
-
-    el.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", checkScrollBoundaries);
-
+    el.addEventListener("scroll", syncEdges, { passive: true });
+    window.addEventListener("resize", syncEdges);
     return () => {
-      el.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", checkScrollBoundaries);
+      el.removeEventListener("scroll", syncEdges);
+      window.removeEventListener("resize", syncEdges);
     };
-  }, [checkScrollBoundaries, repos]);
+  }, [syncEdges, repos]);
 
-  // Smooth scroll left or right with button clicks
-  const scroll = (direction: "left" | "right") => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-
-    const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
-    const cardStep = isMobile ? 300 : 375;
-    const scrollAmount = direction === "left" ? -cardStep : cardStep;
-
-    el.scrollBy({
-      left: scrollAmount,
-      behavior: "smooth",
-    });
+  const scrollByCard = (direction: -1 | 1) => {
+    const el = trackRef.current;
+    const card = el?.querySelector<HTMLElement>("[data-card]");
+    if (!el || !card) return;
+    el.scrollBy({ left: direction * (card.offsetWidth + 16), behavior: "smooth" });
   };
 
-  // Mouse Drag to Scroll handlers
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!scrollContainerRef.current) return;
-    isMouseDown.current = true;
-    hasDragged.current = false;
-    startX.current = e.pageX - scrollContainerRef.current.offsetLeft;
-    scrollLeftStart.current = scrollContainerRef.current.scrollLeft;
-  };
-
-  const handleMouseLeaveOrUp = () => {
-    isMouseDown.current = false;
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isMouseDown.current || !scrollContainerRef.current) return;
-    const x = e.pageX - scrollContainerRef.current.offsetLeft;
-    const walk = (x - startX.current) * 1.3;
-    if (Math.abs(walk) > 6) {
-      hasDragged.current = true;
-    }
-    scrollContainerRef.current.scrollLeft = scrollLeftStart.current - walk;
-  };
+  // Fade only the edges that have more cards behind them, via a mask rather
+  // than a painted gradient, so it works over any background.
+  const fade = `linear-gradient(to right, ${canScrollLeft ? "transparent, #000 4rem" : "#000"}, ${
+    canScrollRight ? "#000 calc(100% - 4rem), transparent" : "#000"
+  })`;
 
   return (
-    <section className="w-full max-w-full overflow-hidden mt-20 pt-12 border-t border-white/[0.08] relative">
-      {/* Subtle ambient spotlight glow behind the archive - contained */}
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 max-w-full rounded-full bg-flame/5 blur-[100px]" />
-      </div>
-
-      {/* Header with Title and Bidirectional Scroll Controls */}
-      <div className="w-full flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+    <section className="mt-24 sm:mt-32">
+      <div className="grid gap-6 border-b border-white/10 pb-8 sm:grid-cols-[1fr_auto] sm:items-end">
         <div>
-          <span className="font-mono text-[11px] uppercase tracking-widest text-flame font-semibold block mb-1">
-            JODC REPO Archive
-          </span>
-          <h3 className="font-display text-2xl sm:text-4xl font-bold tracking-tight text-bone">
-            Previous Spotlights<span className="text-flame">.</span>
-          </h3>
+          <div className="flex items-baseline gap-4">
+            <span className="kicker text-flame">Archive</span>
+            <span className="kicker">{repos.length} weeks</span>
+          </div>
+          <motion.h2
+            initial={{ clipPath: "inset(0% 0% 100% 0%)", y: 28 }}
+            whileInView={{ clipPath: "inset(0% 0% -15% 0%)", y: 0 }}
+            viewport={{ once: true, margin: "-80px" }}
+            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-5 text-[clamp(2.2rem,5vw,3.75rem)]"
+          >
+            Previous <span className="accent">spotlights.</span>
+          </motion.h2>
         </div>
 
-        {/* Scroll Controls & Archive Count */}
-        <div className="flex items-center gap-3">
-          <span className="hidden sm:inline-block font-mono text-xs text-ash/60">
-            {repos.length} Weekly Releases
-          </span>
-
-          <div className="flex items-center gap-1.5 p-1 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-sm">
-            <button
-              type="button"
-              onClick={() => scroll("left")}
-              disabled={!canScrollLeft}
-              title="Scroll left"
-              aria-label="Scroll left"
-              className="h-9 w-9 rounded-full border border-white/10 bg-white/[0.04] text-ash hover:border-flame/50 hover:bg-flame/15 hover:text-bone disabled:opacity-20 disabled:hover:border-white/10 disabled:hover:bg-white/[0.04] disabled:hover:text-ash transition-all flex items-center justify-center active:scale-95 cursor-pointer disabled:cursor-not-allowed"
-            >
-              <ChevronLeft size={17} />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => scroll("right")}
-              disabled={!canScrollRight}
-              title="Scroll right"
-              aria-label="Scroll right"
-              className="h-9 w-9 rounded-full border border-white/10 bg-white/[0.04] text-ash hover:border-flame/50 hover:bg-flame/15 hover:text-bone disabled:opacity-20 disabled:hover:border-white/10 disabled:hover:bg-white/[0.04] disabled:hover:text-ash transition-all flex items-center justify-center active:scale-95 cursor-pointer disabled:cursor-not-allowed"
-            >
-              <ChevronRight size={17} />
-            </button>
-          </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => scrollByCard(-1)}
+            disabled={!canScrollLeft}
+            aria-label="Earlier spotlights"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-bone ring-1 ring-inset ring-white/15 transition-all hover:bg-white/[0.06] hover:ring-white/30 disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ArrowLeft size={17} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollByCard(1)}
+            disabled={!canScrollRight}
+            aria-label="Later spotlights"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-bone ring-1 ring-inset ring-white/15 transition-all hover:bg-white/[0.06] hover:ring-white/30 disabled:pointer-events-none disabled:opacity-30"
+          >
+            <ArrowRight size={17} aria-hidden="true" />
+          </button>
         </div>
       </div>
 
-      {/* Horizontal Carousel Track with Edge Masks */}
-      <div className="w-full max-w-full overflow-hidden relative group/carousel">
-        {/* Left Edge Gradient Fade Mask */}
-        <div
-          className={`pointer-events-none absolute left-0 top-0 bottom-6 w-12 sm:w-16 bg-gradient-to-r from-ink via-ink/80 to-transparent z-10 transition-opacity duration-300 ${canScrollLeft ? "opacity-100" : "opacity-0"
-            }`}
-        />
+      <div
+        ref={trackRef}
+        role="region"
+        aria-label="Previous spotlights"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            scrollByCard(-1);
+          } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            scrollByCard(1);
+          }
+        }}
+        onMouseDown={(e) => {
+          const el = trackRef.current;
+          if (!el) return;
+          drag.current = { down: true, startX: e.pageX, startLeft: el.scrollLeft, moved: false };
+        }}
+        onMouseMove={(e) => {
+          const el = trackRef.current;
+          if (!el || !drag.current.down) return;
+          const dx = e.pageX - drag.current.startX;
+          if (Math.abs(dx) > 6) drag.current.moved = true;
+          el.scrollLeft = drag.current.startLeft - dx;
+        }}
+        onMouseUp={() => (drag.current.down = false)}
+        onMouseLeave={() => (drag.current.down = false)}
+        style={{ maskImage: fade, WebkitMaskImage: fade }}
+        className="mt-8 flex cursor-grab snap-x snap-mandatory gap-4 overflow-x-auto pb-4 pt-1 no-scrollbar active:cursor-grabbing focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-flame/50"
+      >
+        {ordered.map((repo) => {
+          const isCurrent = repo.id === currentRepoId;
+          const lang = repo.languages[0];
 
-        {/* Right Edge Gradient Fade Mask */}
-        <div
-          className={`pointer-events-none absolute right-0 top-0 bottom-6 w-12 sm:w-16 bg-gradient-to-l from-ink via-ink/80 to-transparent z-10 transition-opacity duration-300 ${canScrollRight ? "opacity-100" : "opacity-0"
-            }`}
-        />
+          return (
+            <article
+              key={repo.id}
+              data-card
+              className={`group relative flex w-[17.5rem] shrink-0 snap-start flex-col rounded-3xl p-6 transition-colors duration-300 sm:w-[21rem] ${
+                isCurrent ? "bg-flame/[0.06] ring-1 ring-inset ring-flame/45" : "bg-white/[0.02] ring-1 ring-inset ring-white/[0.08] hover:bg-white/[0.04] hover:ring-white/20"
+              }`}
+            >
+              <span
+                aria-hidden="true"
+                className={`absolute inset-x-6 top-0 h-px origin-left bg-flame transition-transform duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                  isCurrent ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                }`}
+              />
 
-        {/* Smooth Scrollable Container */}
-        <div
-          ref={scrollContainerRef}
-          tabIndex={0}
-          role="region"
-          aria-label="Previous weekly releases carousel. Use left and right arrow keys to navigate."
-          onKeyDown={(e) => {
-            if (e.key === "ArrowLeft") {
-              e.preventDefault();
-              scroll("left");
-            } else if (e.key === "ArrowRight") {
-              e.preventDefault();
-              scroll("right");
-            }
-          }}
-          onMouseDown={handleMouseDown}
-          onMouseLeave={handleMouseLeaveOrUp}
-          onMouseUp={handleMouseLeaveOrUp}
-          onMouseMove={handleMouseMove}
-          className="w-full max-w-full min-w-0 no-scrollbar flex gap-3.5 sm:gap-5 overflow-x-auto pb-6 pt-2 scroll-smooth snap-x snap-mandatory cursor-grab active:cursor-grabbing select-none touch-pan-x [-webkit-overflow-scrolling:touch] focus-visible:ring-1 focus-visible:ring-flame/50 focus-visible:rounded-3xl"
-        >
-          {[...repos]
-            .sort((a, b) => {
-              const numA = parseInt(a.week.replace(/\D/g, ""), 10) || 0;
-              const numB = parseInt(b.week.replace(/\D/g, ""), 10) || 0;
-              return numB - numA;
-            })
-            .map((repo) => {
-            const isCurrent = repo.id === currentRepoId;
-            const primaryLang = repo.languages[0];
+              <div className="flex items-center justify-between gap-2">
+                <span className={`kicker ${isCurrent ? "text-flame" : ""}`}>{isCurrent ? "Viewing now" : repo.week}</span>
+                <span className="inline-flex items-center gap-1 font-mono text-xs tabular-nums text-ash">
+                  <Star size={11} aria-hidden="true" />
+                  {repo.stars.toLocaleString()}
+                </span>
+              </div>
 
-            return (
-              <article
-                key={repo.id}
-                onClick={() => {
-                  if (hasDragged.current) return;
-                  onSelectRepo(repo.id);
-                }}
-                className={`group relative cursor-pointer flex flex-col justify-between overflow-hidden rounded-3xl p-5 sm:p-6 transition-all duration-300 w-[280px] xs:w-[320px] sm:w-[355px] shrink-0 snap-start touch-manipulation ${isCurrent
-                    ? "border border-flame/85 bg-gradient-to-b from-white/[0.08] via-flame/[0.05] to-black/95 shadow-[0_0_35px_rgba(255,122,26,0.24),0_15px_30px_rgba(0,0,0,0.85)] ring-1 ring-flame/35"
-                    : "border border-white/[0.08] bg-gradient-to-b from-white/[0.04] via-white/[0.02] to-black/85 hover:-translate-y-1.5 hover:border-flame/50 hover:bg-white/[0.06] hover:shadow-[0_20px_45px_rgba(0,0,0,0.7),0_0_30px_rgba(255,122,26,0.18)]"
-                  }`}
-              >
-                {/* Glowing Top Hairline Accent */}
-                <div
-                  className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-flame to-transparent transition-opacity duration-300 ${isCurrent ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                    }`}
-                />
+              <h3 className="mt-6 font-mono text-xl font-bold tracking-tight text-bone transition-colors group-hover:text-flame">
+                {/* Stretched button: the whole card selects the week, and it is keyboard reachable. */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (drag.current.moved) return;
+                    onSelectRepo(repo.id);
+                  }}
+                  aria-current={isCurrent ? "true" : undefined}
+                  className="text-left after:absolute after:inset-0 after:rounded-3xl after:content-['']"
+                >
+                  {repo.name}
+                </button>
+              </h3>
+              <p className="mt-1 font-mono text-[11px] text-ash">{repo.builder.name}</p>
 
-                {/* Soft Radial Ambient Glow */}
-                <div
-                  className={`pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 h-28 w-48 rounded-full bg-flame/20 blur-2xl transition-opacity duration-300 ${isCurrent ? "opacity-70" : "opacity-0 group-hover:opacity-100"
-                    }`}
-                />
+              <p className="mt-4 line-clamp-2 text-pretty text-sm leading-relaxed text-ash">{repo.tagline}</p>
 
-                <div>
-                  {/* Top Header: Week Pill and Stars Badge */}
-                  <div className="flex items-center justify-between gap-2 mb-4">
-                    <span
-                      className={`font-mono text-[10px] font-bold px-2.5 py-1 rounded-full border uppercase tracking-wider inline-flex items-center gap-1.5 ${isCurrent
-                          ? "text-flame bg-flame/15 border-flame/35 shadow-[0_0_12px_rgba(255,122,26,0.3)]"
-                          : "text-flame bg-flame/10 border-flame/20"
-                        }`}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-flame animate-pulse" />
-                      {isCurrent ? "Active Spotlight" : repo.week}
-                    </span>
-
-                    <span className="inline-flex items-center gap-1 font-mono text-xs text-ash/90 bg-white/[0.04] px-2.5 py-1 rounded-full border border-white/5 group-hover:border-amber-500/30 group-hover:text-amber-300 transition-colors">
-                      <Star size={11} className="text-flame fill-flame/30" />
-                      {repo.stars.toLocaleString()}
-                    </span>
-                  </div>
-
-                  {/* Repo Name */}
-                  <h4 className="font-mono text-xl font-bold tracking-tight text-bone group-hover:text-flame transition-colors">
-                    {repo.name}
-                  </h4>
-
-                  {/* Builder Row */}
-                  <div className="flex items-center gap-2 mt-2.5">
-                    <div className="h-6 w-6 rounded-full bg-gradient-to-br from-white/15 to-white/5 flex items-center justify-center font-mono text-[9px] text-bone font-bold border border-white/15 shadow-inner">
-                      {repo.builder.avatarText}
-                    </div>
-                    <span className="font-mono text-xs font-semibold text-bone/90 group-hover:text-bone">
-                      {repo.builder.name}
-                    </span>
-                  </div>
-
-                  {/* Tagline */}
-                  <p className="mt-3 text-xs text-ash/85 line-clamp-2 leading-relaxed font-sans">
-                    {repo.tagline}
-                  </p>
-
-                  {/* Tech Tags */}
-                  <div className="flex flex-wrap gap-1.5 mt-3.5">
-                    {repo.tags.slice(0, 2).map((tag) => (
-                      <span
-                        key={tag}
-                        className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] text-ash/70 border border-white/5"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Bottom Meta & Action */}
-                <div className="mt-6 pt-3.5 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono">
-                  <span className="flex items-center gap-1.5 text-ash/80">
-                    <span
-                      className="h-2 w-2 rounded-full shadow-[0_0_8px_currentColor]"
-                      style={{
-                        backgroundColor: primaryLang?.color || "#ff7a1a",
-                        color: primaryLang?.color || "#ff7a1a",
-                      }}
-                    />
-                    <span>{primaryLang?.name}</span>
-                  </span>
-
-                  {isCurrent ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-flame px-2.5 py-0.5 rounded-full bg-flame/15 border border-flame/30">
-                      <span>Viewing</span>
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono font-semibold text-ash group-hover:text-flame px-2.5 py-0.5 rounded-full bg-white/[0.03] group-hover:bg-flame/10 border border-white/5 group-hover:border-flame/30 transition-all">
-                      <span>Inspect</span>
-                      <ArrowUpRight
-                        size={12}
-                        className="transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                      />
-                    </span>
+              <div className="mt-auto pt-6">
+              <div className="flex items-center justify-between border-t border-white/[0.06] pt-4 font-mono text-[11px] text-ash">
+                <span className="flex items-center gap-1.5">
+                  <span aria-hidden="true" className="h-2 w-2 rounded-full" style={{ backgroundColor: lang?.color }} />
+                  {lang?.name}
+                </span>
+                <span className={`flex items-center gap-1 transition-colors ${isCurrent ? "text-flame" : "group-hover:text-flame"}`}>
+                  {isCurrent ? "Open above" : "View"}
+                  {!isCurrent && (
+                    <ArrowUpRight size={12} aria-hidden="true" className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   )}
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                </span>
+              </div>
+              </div>
+            </article>
+          );
+        })}
       </div>
     </section>
   );

@@ -12,7 +12,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "typecheck": "tsc -b --noEmit",
-    "sync:github": "node scripts/sync-github.mjs"
+    "sync:github": "node scripts/sync-github.mjs",
+    "add:repo": "node scripts/add-repo.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",

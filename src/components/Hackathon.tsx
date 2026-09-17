@@ -57,7 +57,7 @@ export function Hackathon({ onExploreFullPage }: HackathonProps) {
   return (
     <section id="hackathon" className="noise relative scroll-mt-24 overflow-hidden border-t border-white/5">
       <div aria-hidden="true" className="pointer-events-none absolute right-[-12rem] top-20 h-[32rem] w-[32rem] rounded-full bg-flame/10 blur-[150px]" />
-      <div className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-32">
+      <div className="relative mx-auto max-w-7xl px-5 py-8 sm:px-8 sm:py-12">
         <Reveal>
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 text-flame">

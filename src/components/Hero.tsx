@@ -74,13 +74,13 @@ export function Hero() {
     <section
       id="top"
       ref={ref}
-      className="noise relative flex min-h-dvh items-center overflow-hidden pt-[68px]"
+      className="noise relative flex min-h-[85vh] items-center overflow-hidden pt-[68px]"
     >
       <HeroBackdrop />
 
       <motion.div
         style={{ y, opacity }}
-        className="relative z-10 mx-auto w-full max-w-7xl px-5 pt-16 pb-20 sm:px-8 sm:pb-28"
+        className="relative z-10 mx-auto w-full max-w-7xl px-5 pt-8 pb-10 sm:px-8 sm:pb-14"
       >
         <h1
           aria-label="Build in the open."
@@ -141,12 +141,12 @@ export function Hero() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-14 grid max-w-4xl grid-cols-1 border-y border-white/10 sm:mt-16 sm:grid-cols-3"
+          className="mt-8 grid max-w-4xl grid-cols-1 border-y border-white/10 sm:mt-10 sm:grid-cols-3"
         >
           {PILLARS.map(({ term, desc, icon: Icon }, i) => (
             <div
               key={term}
-              className={`group/pillar flex items-start gap-4 py-5 sm:px-6 sm:py-6 ${
+              className={`group/pillar flex items-start gap-4 py-4 sm:px-6 sm:py-4 ${
                 i === 0 ? "sm:pl-0" : "border-t border-white/10 sm:border-l sm:border-t-0"
               }`}
             >

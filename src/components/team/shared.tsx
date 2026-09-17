@@ -52,38 +52,40 @@ export function socialsFor(m: TeamMember) {
 
 const AVATAR_BOX = {
   md: "h-14 w-14 sm:h-[4.5rem] sm:w-[4.5rem] rounded-full",
-  xl: "aspect-[3/4] w-[min(15rem,62vw)] sm:w-80 rounded-[1.5rem] sm:rounded-[2rem]",
+  // Fills whatever card it is placed in; the card owns size, radius and clipping.
+  xl: "h-full w-full",
 } as const;
 
 /**
  * Portrait. `md` is a round, face-centred thumbnail (zoomed slightly so any
- * ring baked into the image falls outside the crop); `xl` is the full photo on
- * a tall card. Members without a photo get the club mark instead.
+ * ring baked into the image falls outside the crop); `xl` is the full photo,
+ * filling its card. Members without a photo get the club mark instead.
  */
-export function Avatar({ member, size, dim = false }: { member: TeamMember; size: keyof typeof AVATAR_BOX; dim?: boolean }) {
+export function Avatar({ member, size }: { member: TeamMember; size: keyof typeof AVATAR_BOX }) {
   const box = AVATAR_BOX[size];
+  const xl = size === "xl";
   if (isPlaceholder(member)) {
     return (
       <span
-        className={`${box} flex shrink-0 items-center justify-center border border-dashed border-white/20 bg-white/[0.02] text-bone/30 transition-colors duration-300 group-hover:border-flame/50 group-hover:text-bone/50`}
+        className={`${box} flex shrink-0 items-center justify-center bg-white/[0.02] text-bone/30 transition-colors duration-300 group-hover:text-bone/50 ${
+          xl ? "" : "border border-dashed border-white/20 group-hover:border-flame/50"
+        }`}
       >
-        <LogoMark size={size === "xl" ? 96 : 26} />
+        <LogoMark size={xl ? 96 : 26} />
       </span>
     );
   }
-  const xl = size === "xl";
   return (
-    <span className={`${box} relative block shrink-0 overflow-hidden bg-ink-soft ring-1 ring-white/10`}>
+    <span className={`${box} relative block shrink-0 overflow-hidden bg-ink-soft ${xl ? "" : "ring-1 ring-white/10"}`}>
       <img
         src={xl ? (member.photo ?? member.image) : member.image}
         alt=""
         width={xl ? 720 : 144}
         height={xl ? 960 : 144}
-        className={`h-full w-full object-cover transition-[filter,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          xl ? "" : "scale-[1.14]"
-        } ${dim ? "grayscale group-hover:grayscale-0" : ""}`}
+        decoding="async"
+        draggable={false}
+        className={`h-full w-full object-cover ${xl ? "" : "scale-[1.14]"}`}
       />
-      {xl && <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-ink/40 to-transparent" />}
     </span>
   );
 }

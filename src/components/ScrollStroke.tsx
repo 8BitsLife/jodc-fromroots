@@ -103,6 +103,10 @@ function Piece({
   pathRef?: (el: SVGPathElement | null) => void;
 }) {
   const pathLength = useTransform(progress, window, [0, outbound]);
+  // A zero-length path with round caps still paints a dot the size of the
+  // stroke. For the fat mask strokes that dot let bits of letters show before
+  // the pen got there, so each piece stays hidden until its window begins.
+  const opacity = useTransform(progress, (v) => (v > window[0] ? 1 : 0));
   return (
     <motion.path
       ref={pathRef}
@@ -112,7 +116,7 @@ function Piece({
       strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ pathLength }}
+      style={{ pathLength, opacity }}
     />
   );
 }

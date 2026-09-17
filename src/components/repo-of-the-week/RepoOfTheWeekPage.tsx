@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef, type MouseEvent } from "react";
+import { useEffect, useRef, type MouseEvent } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { LEADERBOARD_REPOS } from "../../data/repoOfTheWeek";
+import { useRepoOfTheWeek } from "../../hooks/useRepoOfTheWeek";
 import { RepoSpotlight } from "./RepoSpotlight";
 import { Leaderboard } from "./Leaderboard";
 import { PreviousSpotlights } from "./PreviousSpotlights";
@@ -17,19 +17,11 @@ interface RepoOfTheWeekPageProps {
 }
 
 const ease = [0.16, 1, 0.3, 1] as const;
-const LATEST = LEADERBOARD_REPOS[0];
-
-/** `?repo=<id>` makes any spotlight linkable; unknown ids fall back to the latest week. */
-function repoFromUrl(): string {
-  const id = new URLSearchParams(window.location.search).get("repo");
-  return LEADERBOARD_REPOS.some((r) => r.id === id) ? (id as string) : LATEST.id;
-}
 
 export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPageProps) {
-  const [selectedRepoId, setSelectedRepoId] = useState<string>(repoFromUrl);
+  const { repos, selectedRepo, selectedRepoId, selectRepo, isLive } = useRepoOfTheWeek();
   const spotlightRef = useRef<HTMLDivElement>(null);
-
-  const selectedRepo = LEADERBOARD_REPOS.find((r) => r.id === selectedRepoId) ?? LATEST;
+  const latestRepo = repos[0];
 
   // Arriving on the page starts at the top — once, not on every selection.
   useEffect(() => {
@@ -44,12 +36,7 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
   }, [selectedRepo.name]);
 
   const handleSelectRepo = (id: string) => {
-    setSelectedRepoId(id);
-
-    const url = new URL(window.location.href);
-    if (id === LATEST.id) url.searchParams.delete("repo");
-    else url.searchParams.set("repo", id);
-    window.history.replaceState(null, "", url);
+    selectRepo(id);
 
     if (spotlightRef.current) {
       const top = spotlightRef.current.getBoundingClientRect().top + window.scrollY - 96;
@@ -94,7 +81,7 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
                   <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-flame" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-flame" />
                 </span>
-                Live · {LATEST.week}
+                {isLive ? "Live DB · " : "Live · "}{latestRepo.week}
               </span>
             </nav>
 
@@ -102,7 +89,7 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
               <Reveal>
                 <div className="flex items-baseline gap-4">
                   <span className="kicker text-flame">Community spotlight</span>
-                  <span className="kicker">{LATEST.dateRange}</span>
+                  <span className="kicker">{latestRepo.dateRange}</span>
                 </div>
               </Reveal>
               <h1 className="mt-6 overflow-hidden pb-[0.08em] text-[clamp(2.75rem,8vw,6.5rem)] font-semibold leading-[0.92] tracking-[-0.05em] text-bone">
@@ -119,11 +106,11 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
           <div className="mb-6 lg:hidden">
             <div className="mb-3 flex items-center justify-between">
               <span className="kicker text-flame">Pick a week</span>
-              <span className="font-mono text-[10px] text-ash">Swipe · {LEADERBOARD_REPOS.length} spotlights</span>
+              <span className="font-mono text-[10px] text-ash">Swipe · {repos.length} spotlights</span>
             </div>
 
             <div className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-2 no-scrollbar sm:-mx-8 sm:px-8">
-              {LEADERBOARD_REPOS.map((repo) => {
+              {repos.map((repo) => {
                 const isSelected = repo.id === selectedRepoId;
                 return (
                   <button
@@ -160,12 +147,12 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
             </div>
 
             <div id="leaderboard-section" className="scroll-mt-28 lg:sticky lg:top-24 lg:col-span-4">
-              <Leaderboard repos={LEADERBOARD_REPOS} selectedRepoId={selectedRepoId} onSelectRepo={handleSelectRepo} />
+              <Leaderboard repos={repos} selectedRepoId={selectedRepoId} onSelectRepo={handleSelectRepo} />
             </div>
           </div>
 
           <div id="archive-section" className="scroll-mt-24">
-            <PreviousSpotlights repos={LEADERBOARD_REPOS} currentRepoId={selectedRepoId} onSelectRepo={handleSelectRepo} />
+            <PreviousSpotlights repos={repos} currentRepoId={selectedRepoId} onSelectRepo={handleSelectRepo} />
           </div>
         </div>
 

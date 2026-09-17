@@ -84,7 +84,9 @@ export function Avatar({ member, size }: { member: TeamMember; size: keyof typeo
         height={xl ? 960 : 144}
         decoding="async"
         draggable={false}
-        className={`h-full w-full object-cover ${xl ? "" : "scale-[1.14]"}`}
+        className={`h-full w-full object-cover ${
+          xl ? (member.photoPosition ?? member.imagePosition ?? "object-center") : (member.imagePosition ?? "object-center")
+        } ${xl ? "" : "scale-[1.14]"}`}
       />
     </span>
   );

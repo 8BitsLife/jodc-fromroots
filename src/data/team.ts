@@ -13,6 +13,10 @@ export type TeamMember = {
   image: string;
   /** Full 3:4 photo for the featured card; falls back to `image`. */
   photo?: string;
+  /** Custom CSS object-position for the thumbnail avatar. */
+  imagePosition?: string;
+  /** Custom CSS object-position for the featured photo card. */
+  photoPosition?: string;
   instagram?: string;
   linkedin?: string;
   github?: string;
@@ -72,6 +76,18 @@ export const TEAM: Record<TeamGroup, TeamMember[]> = {
   ],
   "Core Team": [
     {
+      name: "Vardaan Saxena",
+      role: "Core Team",
+      bio: "I always build something that I keep wishing someone would make for me.",
+      image: "/team/vardaan-saxena.jpg",
+      photo: "/team/full/vardaan-saxena.jpg",
+      imagePosition: "object-[center_35%]",
+      photoPosition: "object-[center_20%]",
+      github: "https://github.com/simplyvardaan",
+      linkedin: "https://www.linkedin.com/in/vardaan-saxena-b4b4a4365/",
+      portfolio: "https://vardaansaxena.tech/",
+    },
+    {
       name: "Avni Porwal",
       role: "Core Team",
       bio: "Chaos, but cute.",
@@ -79,15 +95,6 @@ export const TEAM: Record<TeamGroup, TeamMember[]> = {
       photo: "/team/full/avni-porwal.jpg",
       github: "https://github.com/avniporwal8929-create",
       linkedin: "https://www.linkedin.com/in/avni-porwal-1974a5379",
-    },
-    {
-      name: "Vardaan Saxena",
-      role: "Core Team",
-      bio: "I always build something that I keep wishing someone would make for me.",
-      image: "/team/vardaan-saxena.jpg",
-      photo: "/team/full/vardaan-saxena.jpg",
-      github: "https://github.com/simplyvardaan",
-      linkedin: "https://www.linkedin.com/in/vardaan-saxena-b4b4a4365/",
     },
     {
       name: "Hardik Bhagtani",

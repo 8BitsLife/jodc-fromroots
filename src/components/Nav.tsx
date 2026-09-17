@@ -238,7 +238,7 @@ export function Nav({ currentRoute = "home", onNavigate }: NavProps) {
                       transition={{ duration: 0.22, ease }}
                       className="absolute left-0 top-full origin-top-left pt-3"
                     >
-                      <ul className="glass relative w-60 rounded-[1.4rem] p-1.5">
+                      <ul className="glass glass-nested relative w-60 rounded-[1.4rem] p-1.5">
                         {HOME_SECTIONS.map((item, i) => {
                           const isActive = currentRoute === "home" && active === item.href;
                           return (

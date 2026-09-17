@@ -4,8 +4,9 @@ import { usePointerFine } from "../hooks/usePointerFine";
 import { usePrefersReducedMotion } from "../hooks/usePrefersReducedMotion";
 
 /**
- * A soft flame halo trailing the mouse. Desktop only, purely decorative,
- * and it never replaces the real cursor — so nothing breaks if it is off.
+ * A faint flame glow under the mouse, shown only over links and buttons.
+ * Desktop only, purely decorative, and it never replaces the real cursor —
+ * so nothing breaks if it is off.
  */
 export function Cursor() {
   const fine = usePointerFine();
@@ -39,8 +40,10 @@ export function Cursor() {
       className="pointer-events-none fixed z-[70] hidden md:block"
       style={{ left: sx, top: sy, translateX: "-50%", translateY: "-50%" }}
     >
+      {/* No halo trailing the mouse; only a faint glow over things you can click. */}
       <motion.div
-        animate={{ scale: hot ? 2.6 : 1, opacity: hot ? 0.5 : 0.28 }}
+        initial={{ opacity: 0 }}
+        animate={{ scale: hot ? 2.6 : 1, opacity: hot ? 0.1875 : 0 }}
         transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
         className="h-5 w-5 rounded-full bg-flame blur-[7px]"
       />

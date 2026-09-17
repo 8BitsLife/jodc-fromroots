@@ -209,6 +209,16 @@ export const TEAM: Record<TeamGroup, TeamMember[]> = {
       linkedin: "https://www.linkedin.com/in/paarth-sachdeva-5933232b1",
       instagram: "https://www.instagram.com/paarthsachdeva_.30/",
     },
+    {
+      name: "Gajanan Ji Sarvesh",
+      role: "Core Team",
+      bio: "Why So Serious?",
+      image: "/team/gajanan-ji-sarvesh.jpg",
+      photo: "/team/full/gajanan-ji-sarvesh.jpg",
+      github: "https://github.com/8BitsLife",
+      linkedin: "https://www.linkedin.com/in/gajanan-ji-sarvesh-9883203a1/",
+      discord: "https://discord.com/users/1448322525074297014",
+    },
   ],
 };
 

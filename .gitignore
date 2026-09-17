@@ -14,3 +14,8 @@ dist
 
 # Vercel
 .vercel
+
+# Environment variables (keep keys out of git; set them in Vercel instead)
+.env
+.env.*
+!.env.example

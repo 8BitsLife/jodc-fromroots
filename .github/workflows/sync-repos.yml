@@ -1,0 +1,33 @@
+name: Sync GitHub Repos
+
+on:
+  schedule:
+    # Runs every day at midnight UTC (00:00 UTC)
+    - cron: '0 0 * * *'
+  # Allows manual trigger from the GitHub Actions tab anytime
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Sync Repo of the Week Stats
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Sync Worker
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run sync:github

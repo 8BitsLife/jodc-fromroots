@@ -51,8 +51,8 @@ export function socialsFor(m: TeamMember) {
 }
 
 const AVATAR_BOX = {
-  md: "h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] rounded-full",
-  xl: "aspect-[3/4] w-64 sm:w-80 rounded-[2rem]",
+  md: "h-14 w-14 sm:h-[4.5rem] sm:w-[4.5rem] rounded-full",
+  xl: "aspect-[3/4] w-[min(15rem,62vw)] sm:w-80 rounded-[1.5rem] sm:rounded-[2rem]",
 } as const;
 
 /**

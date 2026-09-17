@@ -41,7 +41,7 @@ export function TeamPage({ onNavigate }: TeamPageProps) {
             <Reveal>
               <div className="flex items-baseline gap-4">
                 <span className="kicker text-flame">Team</span>
-                <span className="kicker">{total} people · 3 circles</span>
+                <span className="kicker">{total} people · {TEAM_GROUPS.length} circles</span>
               </div>
             </Reveal>
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion, useInView } from "framer-motion";
+import { AnimatePresence, animate, motion, useInView, useMotionValue, type PanInfo } from "framer-motion";
 import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { TEAM, TEAM_GROUPS, type TeamGroup } from "../../data/team";
 import { usePrefersReducedMotion } from "../../hooks/usePrefersReducedMotion";
@@ -8,10 +8,15 @@ import { Avatar, GROUP_META, GroupHeader, ease, isOpenSeat, socialsFor } from ".
 /** How long each person stays featured before the spotlight moves on. */
 const CYCLE_MS = 3500;
 
+/** How far (px) or how fast (px/s) a sideways swipe must go to change person. */
+const SWIPE_DISTANCE = 50;
+const SWIPE_VELOCITY = 400;
+
 /**
  * One group: a single member featured large, everyone in a filmstrip below.
  * The feature advances on its own while the section is on screen, pausing
- * whenever the visitor hovers or focuses it, so reading is never interrupted.
+ * whenever the visitor hovers or focuses it. Swipe sideways to move through
+ * people; once someone swipes or taps, the group stops advancing on its own.
  */
 function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
   const members = TEAM[group];
@@ -19,15 +24,32 @@ function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
   const [active, setActive] = useState(() => Math.max(0, members.findIndex((m) => !isOpenSeat(m))));
   const [direction, setDirection] = useState<1 | -1>(1);
   const [paused, setPaused] = useState(false);
+  // Touch has no hover to pause on, so taking control by hand stops the auto-advance for good.
+  const [takenOver, setTakenOver] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
-  const inView = useInView(sectionRef, { amount: 0.45 });
+  // Groups can be taller than a phone screen, so a small share in view is enough.
+  const inView = useInView(sectionRef, { amount: 0.2 });
   const reduced = usePrefersReducedMotion();
-  const cycling = members.length > 1 && inView && !paused && !reduced;
+  const cycling = members.length > 1 && inView && !paused && !takenOver && !reduced;
 
   const go = (next: number, dir: 1 | -1) => {
+    setTakenOver(true);
     setDirection(dir);
     setActive((next + members.length) % members.length);
+  };
+
+  // Swipe: the portrait follows the finger a little, then the spotlight moves on.
+  const swipeX = useMotionValue(0);
+  const onPan = (_: PointerEvent, info: PanInfo) => {
+    if (Math.abs(info.offset.x) > Math.abs(info.offset.y)) swipeX.set(info.offset.x * 0.35);
+  };
+  const onPanEnd = (_: PointerEvent, info: PanInfo) => {
+    animate(swipeX, 0, { type: "spring", stiffness: 420, damping: 36 });
+    const { offset, velocity } = info;
+    if (members.length < 2 || Math.abs(offset.x) < Math.abs(offset.y)) return;
+    if (offset.x < -SWIPE_DISTANCE || velocity.x < -SWIPE_VELOCITY) go(active + 1, 1);
+    else if (offset.x > SWIPE_DISTANCE || velocity.x > SWIPE_VELOCITY) go(active - 1, -1);
   };
 
   useEffect(() => {
@@ -128,7 +150,6 @@ function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
   };
 
   const member = members[active];
-  const socials = socialsFor(member);
   const counter = `${String(active + 1).padStart(2, "0")} / ${String(members.length).padStart(2, "0")}`;
 
   return (
@@ -144,9 +165,15 @@ function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
       <div className="relative mx-auto max-w-7xl">
         <GroupHeader group={group} index={index} />
 
-        <div className="mt-16 grid items-center gap-12 lg:grid-cols-[auto_1fr] lg:gap-24">
+        {/* pan-y keeps vertical page scrolling native while sideways swipes change person. */}
+        <motion.div
+          onPan={onPan}
+          onPanEnd={onPanEnd}
+          style={{ touchAction: "pan-y" }}
+          className="mt-10 grid items-center gap-8 sm:mt-16 sm:gap-12 lg:grid-cols-[auto_1fr] lg:gap-24"
+        >
           {/* ── Portrait ──────────────────────────────────────────────── */}
-          <div className="relative mx-auto lg:mx-0">
+          <motion.div style={{ x: swipeX }} className="relative mx-auto select-none lg:mx-0">
             <div aria-hidden="true" className="absolute inset-[12%] rounded-full bg-flame/[0.14] blur-[70px]" />
 
             {/* Frame that traces itself around each new portrait. */}
@@ -154,7 +181,7 @@ function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
               aria-hidden="true"
               viewBox="0 0 100 100"
               preserveAspectRatio="none"
-              className="pointer-events-none absolute -inset-4 h-[calc(100%+2rem)] w-[calc(100%+2rem)] overflow-visible"
+              className="pointer-events-none absolute -inset-3 h-[calc(100%+1.5rem)] w-[calc(100%+1.5rem)] overflow-visible sm:-inset-4 sm:h-[calc(100%+2rem)] sm:w-[calc(100%+2rem)]"
             >
               <rect x="0.5" y="0.5" width="99" height="99" rx="12" ry="9" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
               <motion.rect
@@ -190,59 +217,70 @@ function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
                 </motion.div>
               </AnimatePresence>
             </div>
-          </div>
+          </motion.div>
 
           {/* ── Details ───────────────────────────────────────────────── */}
           {/* Announce swaps the visitor makes, not the automatic ones every few seconds. */}
           <div {...hold} aria-live={cycling ? "off" : "polite"} className="min-w-0 text-center lg:text-left">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={`copy-${active}`}
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -12 }}
-                transition={{ duration: 0.45, ease }}
-              >
-                <p className="kicker text-flame">
-                  {member.role}
-                  {isOpenSeat(member) && <span className="text-ash"> · Seat open</span>}
-                </p>
-                <h3 className="mt-5 text-balance text-[clamp(2.75rem,6.5vw,5.5rem)] font-semibold leading-[0.92] tracking-[-0.055em] text-bone">
-                  {member.name}
-                </h3>
-                <p className="mx-auto mt-6 max-w-xl text-pretty text-lg leading-relaxed text-ash lg:mx-0">
-                  {member.bio}
-                </p>
-
-                {socials.length > 0 ? (
-                  <ul className="mt-8 flex flex-wrap justify-center gap-2 lg:justify-start">
-                    {socials.map(({ Icon, href, label }) => (
-                      <li key={label}>
-                        <a
-                          href={href}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          aria-label={`${member.name} on ${label}`}
-                          className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/[0.04] px-4 text-sm text-bone ring-1 ring-inset ring-white/10 transition-colors hover:bg-flame hover:text-ink hover:ring-flame"
-                        >
-                          <Icon size={15} aria-hidden="true" />
-                          {label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  isOpenSeat(member) && (
-                    <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.16em] text-ash">
-                      Announcement soon
+            {/* Everyone's details share one grid cell, so the block is as tall as the
+                longest bio and the page never jumps as the spotlight moves. */}
+            <div className="grid">
+              {members.map((m, i) => {
+                const on = i === active;
+                const links = socialsFor(m);
+                return (
+                  <motion.div
+                    key={`${m.name}-${i}`}
+                    aria-hidden={!on}
+                    initial={false}
+                    animate={
+                      on
+                        ? { opacity: 1, y: 0, visibility: "visible" }
+                        : { opacity: 0, y: -10, transitionEnd: { visibility: "hidden" } }
+                    }
+                    transition={{ duration: on ? 0.45 : 0.25, delay: on ? 0.12 : 0, ease }}
+                    className="[grid-area:1/1]"
+                  >
+                    <p className="kicker text-flame">
+                      {m.role}
+                      {isOpenSeat(m) && <span className="text-ash"> · Seat open</span>}
                     </p>
-                  )
-                )}
-              </motion.div>
-            </AnimatePresence>
+                    <h3 className="mt-4 text-balance text-[clamp(2.25rem,6.5vw,5.5rem)] font-semibold leading-[0.95] tracking-[-0.05em] text-bone sm:mt-5">
+                      {m.name}
+                    </h3>
+                    <p className="mx-auto mt-4 max-w-xl text-pretty text-base leading-relaxed text-ash sm:mt-6 sm:text-lg lg:mx-0">
+                      {m.bio}
+                    </p>
+
+                    {links.length > 0 ? (
+                      <ul className="mt-6 flex flex-wrap justify-center gap-2 sm:mt-8 lg:justify-start">
+                        {links.map(({ Icon, href, label }) => (
+                          <li key={label}>
+                            <a
+                              href={href}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              aria-label={`${m.name} on ${label}`}
+                              className="inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full bg-white/[0.04] px-4 text-sm text-bone ring-1 ring-inset ring-white/10 transition-colors hover:bg-flame hover:text-ink hover:ring-flame"
+                            >
+                              <Icon size={15} aria-hidden="true" />
+                              <span className="max-[400px]:sr-only">{label}</span>
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      isOpenSeat(m) && (
+                        <p className="mt-8 font-mono text-[11px] uppercase tracking-[0.16em] text-ash">Announcement soon</p>
+                      )
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
 
             {members.length > 1 && (
-              <div className="mt-10 flex items-center justify-center gap-3 lg:justify-start">
+              <div className="mt-8 flex items-center justify-center gap-3 sm:mt-10 lg:justify-start">
                 <button
                   type="button"
                   onClick={() => go(active - 1, -1)}
@@ -260,21 +298,25 @@ function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
                   <ArrowRight size={17} aria-hidden="true" />
                 </button>
                 <span className="ml-2 font-mono text-xs tabular-nums text-ash">{counter}</span>
+                {/* Only on touch screens, where swiping is the natural way through. */}
+                <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-ash/60 [@media(hover:hover)]:hidden">
+                  · Swipe
+                </span>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* ── Filmstrip ───────────────────────────────────────────────── */}
         {members.length > 1 && (
-          <div {...hold} className="relative -mx-5 mt-16 border-t border-white/10 sm:mx-0">
+          <div {...hold} className="relative -mx-5 mt-12 border-t border-white/10 sm:mx-0 sm:mt-16">
             <ul
               ref={stripRef}
               {...drag}
               aria-label={`Everyone in ${group}`}
-              className="flex cursor-grab snap-x gap-1 overflow-x-auto overscroll-x-contain px-5 pt-6 no-scrollbar active:cursor-grabbing sm:snap-none sm:px-0"
+              className="flex cursor-grab snap-x scroll-px-5 overflow-x-auto overscroll-x-contain px-5 pt-4 no-scrollbar active:cursor-grabbing sm:gap-1 sm:snap-none sm:px-0 sm:pt-6"
               style={{
-                maskImage: `linear-gradient(90deg, ${edges.start ? "#000" : "transparent"}, #000 4rem, #000 calc(100% - 4rem), ${edges.end ? "#000" : "transparent"})`,
+                maskImage: `linear-gradient(90deg, ${edges.start ? "#000" : "transparent"}, #000 3rem, #000 calc(100% - 3rem), ${edges.end ? "#000" : "transparent"})`,
               }}
             >
               {members.map((m, i) => {
@@ -286,23 +328,25 @@ function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
                       onClick={() => go(i, i >= active ? 1 : -1)}
                       aria-pressed={selected}
                       aria-label={`Feature ${m.name}, ${m.role}`}
-                      className="group relative flex w-36 flex-col items-center gap-3 px-2 pb-5 pt-3 text-center"
+                      className="group relative flex w-[6.5rem] flex-col items-center gap-2.5 px-1.5 pb-4 pt-3 text-center sm:w-36 sm:gap-3 sm:px-2 sm:pb-5"
                     >
                       <span className={`transition-opacity duration-300 ${selected ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
                         <Avatar member={m} size="md" dim={!selected} />
                       </span>
-                      <span className="min-w-0">
-                        <span className={`line-clamp-1 block text-sm transition-colors ${selected ? "text-bone" : "text-ash group-hover:text-bone"}`}>
+                      <span className="w-full min-w-0">
+                        <span className={`line-clamp-1 block text-[13px] transition-colors sm:text-sm ${selected ? "text-bone" : "text-ash group-hover:text-bone"}`}>
                           {m.name}
                         </span>
-                        <span className="mt-0.5 block font-mono text-[10px] uppercase tracking-[0.14em] text-ash/70">{m.role}</span>
+                        <span className="mt-0.5 line-clamp-1 block font-mono text-[9px] uppercase tracking-[0.12em] text-ash/70 sm:text-[10px] sm:tracking-[0.14em]">
+                          {m.role}
+                        </span>
                       </span>
 
                       {/* Selection marker glides between thumbnails; the fill shows time to the next swap. */}
                       {selected && (
                         <motion.span
                           layoutId={`spotlight-marker-${group}`}
-                          className="absolute inset-x-6 bottom-0 h-0.5 overflow-hidden rounded-full bg-white/15"
+                          className="absolute inset-x-4 bottom-0 h-0.5 overflow-hidden sm:inset-x-6 rounded-full bg-white/15"
                           transition={{ type: "spring", stiffness: 380, damping: 34 }}
                         >
                           <motion.span

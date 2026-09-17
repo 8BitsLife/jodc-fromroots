@@ -1,4 +1,4 @@
-# Every change to the repository needs a review from the owner before it can
-# be merged into main. Enforced by the "Require review from Code Owners"
-# setting in the `main` ruleset (.github/rulesets/main.json).
-* @8BitsLife
+# Owner review is paused for now. To turn it back on, uncomment the line below
+# and set required approvals to 1 with "Require review from Code Owners" in the
+# `main` ruleset (.github/rulesets/main.json).
+# * @8BitsLife

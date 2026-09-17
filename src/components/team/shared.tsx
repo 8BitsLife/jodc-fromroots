@@ -1,5 +1,7 @@
+import { forwardRef } from "react";
 import { motion } from "framer-motion";
-import { Code2, Github, Globe, GraduationCap, Instagram, Linkedin, Users, type LucideIcon } from "lucide-react";
+import { siDiscord } from "simple-icons";
+import { Code2, Github, Globe, GraduationCap, Instagram, Linkedin, Users, type LucideIcon, type LucideProps } from "lucide-react";
 import { TEAM, type TeamGroup, type TeamMember } from "../../data/team";
 import { LogoMark } from "../LogoMark";
 import { Reveal } from "../Reveal";
@@ -25,49 +27,63 @@ export const GROUP_META: Record<TeamGroup, { icon: LucideIcon; id: string; lead:
 };
 
 const PLACEHOLDER = "/team/jodc-placeholder.png";
+/** No photo yet: the avatar shows the club mark. */
 export const isPlaceholder = (m: TeamMember) => m.image === PLACEHOLDER;
+/** A seat nobody has taken yet (named "JODC …" in the roster). */
+export const isOpenSeat = (m: TeamMember) => m.name.startsWith("JODC ");
+
+/** Lucide has no Discord mark, so this one is drawn from simple-icons at the same size. */
+const DiscordIcon = forwardRef<SVGSVGElement, LucideProps>(({ size = 24, color: _color, strokeWidth: _sw, absoluteStrokeWidth: _asw, ...rest }, ref) => (
+  <svg ref={ref} viewBox="0 0 24 24" width={size} height={size} fill="currentColor" {...rest}>
+    <path d={siDiscord.path} />
+  </svg>
+)) as LucideIcon;
 
 export function socialsFor(m: TeamMember) {
-  return [
+  const links: { Icon: LucideIcon; href?: string; label: string }[] = [
     { Icon: Github, href: m.github, label: "GitHub" },
     { Icon: Linkedin, href: m.linkedin, label: "LinkedIn" },
     { Icon: Instagram, href: m.instagram, label: "Instagram" },
+    { Icon: DiscordIcon, href: m.discord, label: "Discord" },
     { Icon: Globe, href: m.portfolio, label: "Portfolio" },
-  ].filter((s): s is { Icon: LucideIcon; href: string; label: string } => Boolean(s.href && s.href !== "#"));
+  ];
+  return links.filter((s): s is { Icon: LucideIcon; href: string; label: string } => Boolean(s.href && s.href !== "#"));
 }
 
 const AVATAR_BOX = {
-  md: "h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem]",
-  xl: "h-56 w-56 sm:h-72 sm:w-72",
+  md: "h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem] rounded-full",
+  xl: "aspect-[3/4] w-64 sm:w-80 rounded-[2rem]",
 } as const;
 
 /**
- * Round portrait. Real photos are zoomed slightly so any ring baked into the
- * image falls outside the crop; seats not yet filled get the club mark instead
- * of a stock silhouette.
+ * Portrait. `md` is a round, face-centred thumbnail (zoomed slightly so any
+ * ring baked into the image falls outside the crop); `xl` is the full photo on
+ * a tall card. Members without a photo get the club mark instead.
  */
 export function Avatar({ member, size, dim = false }: { member: TeamMember; size: keyof typeof AVATAR_BOX; dim?: boolean }) {
   const box = AVATAR_BOX[size];
   if (isPlaceholder(member)) {
     return (
       <span
-        className={`${box} flex shrink-0 items-center justify-center rounded-full border border-dashed border-white/20 bg-white/[0.02] text-bone/30 transition-colors duration-300 group-hover:border-flame/50 group-hover:text-bone/50`}
+        className={`${box} flex shrink-0 items-center justify-center border border-dashed border-white/20 bg-white/[0.02] text-bone/30 transition-colors duration-300 group-hover:border-flame/50 group-hover:text-bone/50`}
       >
         <LogoMark size={size === "xl" ? 96 : 26} />
       </span>
     );
   }
+  const xl = size === "xl";
   return (
-    <span className={`${box} relative block shrink-0 overflow-hidden rounded-full ring-1 ring-white/10`}>
+    <span className={`${box} relative block shrink-0 overflow-hidden bg-ink-soft ring-1 ring-white/10`}>
       <img
-        src={member.image}
+        src={xl ? (member.photo ?? member.image) : member.image}
         alt=""
-        width={288}
-        height={288}
-        className={`h-full w-full scale-[1.14] object-cover transition-[filter,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          dim ? "grayscale group-hover:grayscale-0" : ""
-        }`}
+        width={xl ? 720 : 144}
+        height={xl ? 960 : 144}
+        className={`h-full w-full object-cover transition-[filter,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          xl ? "" : "scale-[1.14]"
+        } ${dim ? "grayscale group-hover:grayscale-0" : ""}`}
       />
+      {xl && <span aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-ink/40 to-transparent" />}
     </span>
   );
 }

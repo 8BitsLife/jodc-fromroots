@@ -94,7 +94,7 @@ export function TeamPage({ onNavigate }: TeamPageProps) {
         <SpotlightLayout />
 
         {/* ── Join ────────────────────────────────────────────────────── */}
-        <section className="relative overflow-x-clip px-5 py-28 sm:px-8 sm:py-36">
+        <section className="relative overflow-x-clip px-5 py-14 sm:px-8 sm:py-20">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -bottom-56 left-1/2 h-[420px] w-[min(1000px,130vw)] -translate-x-1/2 rounded-full bg-flame/[0.1] blur-[170px]"

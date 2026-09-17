@@ -11,7 +11,7 @@ export function Join() {
   return (
     <section
       id="join"
-      className="relative scroll-mt-24 overflow-hidden px-5 py-28 sm:px-8 sm:py-40"
+      className="relative scroll-mt-24 overflow-hidden px-5 py-10 sm:px-8 sm:py-14"
     >
       {/* Hairline seam with the section above, fading out at both ends. */}
       <div

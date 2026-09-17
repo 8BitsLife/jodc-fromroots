@@ -19,7 +19,7 @@ interface RepoOfTheWeekPageProps {
 const ease = [0.16, 1, 0.3, 1] as const;
 
 export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPageProps) {
-  const { repos, selectedRepo, selectedRepoId, selectRepo, isLive } = useRepoOfTheWeek();
+  const { repos, selectedRepo, selectedRepoId, selectRepo } = useRepoOfTheWeek();
   const spotlightRef = useRef<HTMLDivElement>(null);
   const latestRepo = repos[0];
 
@@ -81,7 +81,7 @@ export function RepoOfTheWeekPage({ onBackToHome, onNavigate }: RepoOfTheWeekPag
                   <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-flame" />
                   <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-flame" />
                 </span>
-                {isLive ? "Live DB · " : "Live · "}{latestRepo.week}
+                {latestRepo.week}
               </span>
             </nav>
 

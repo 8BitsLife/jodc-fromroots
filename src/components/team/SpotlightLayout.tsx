@@ -196,7 +196,7 @@ function SpotlightGroup({ group, index }: { group: TeamGroup; index: number }) {
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget)) setPaused(false);
       }}
-      className="relative scroll-mt-24 overflow-x-clip px-5 py-16 sm:px-8 sm:py-24"
+      className="relative scroll-mt-24 overflow-x-clip px-5 py-10 sm:px-8 sm:py-16"
     >
       <div className="relative mx-auto max-w-7xl">
         <GroupHeader group={group} index={index} />

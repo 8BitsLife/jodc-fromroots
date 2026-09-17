@@ -16,7 +16,7 @@ type Props = {
  */
 export function SectionHeading({ index, eyebrow, title, lead }: Props) {
   return (
-    <div className="border-b border-white/10 pb-10">
+    <div className="border-b border-white/10 pb-6">
       <Reveal>
         <div className="flex items-baseline gap-4">
           <span className="kicker text-flame">{index}</span>
@@ -24,7 +24,7 @@ export function SectionHeading({ index, eyebrow, title, lead }: Props) {
         </div>
       </Reveal>
 
-      <div className="mt-7 grid gap-x-12 gap-y-6 md:grid-cols-[1.35fr_1fr] md:items-end">
+      <div className="mt-4 grid gap-x-12 gap-y-4 md:grid-cols-[1.35fr_1fr] md:items-end">
         {/* Mask wipe: the title rises out from behind its own baseline. */}
         <motion.h2
           initial={{ clipPath: "inset(0% 0% 100% 0%)", y: 28 }}

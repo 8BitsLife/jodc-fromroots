@@ -525,7 +525,7 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
         </section>
 
         {/* ── Core philosophy ──────────────────────────────────────────── */}
-        <section className="pane relative border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+        <section className="pane relative border-t border-white/5 px-5 py-14 sm:px-8 sm:py-20">
           <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-[0.95fr_1.05fr] lg:gap-24">
             <div className="lg:sticky lg:top-28 lg:self-start">
               <Reveal>
@@ -604,7 +604,7 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
         </section>
 
         {/* ── Tracks ───────────────────────────────────────────────────── */}
-        <section id="tracks-section" className="relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+        <section id="tracks-section" className="relative scroll-mt-24 border-t border-white/5 px-5 py-14 sm:px-8 sm:py-20">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               index="02"
@@ -676,7 +676,7 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
         </section>
 
         {/* ── Timeline ─────────────────────────────────────────────────── */}
-        <section id="timeline-section" className="pane relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+        <section id="timeline-section" className="pane relative scroll-mt-24 border-t border-white/5 px-5 py-14 sm:px-8 sm:py-20">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               index="03"
@@ -696,7 +696,7 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
         </section>
 
         {/* ── Prizes ───────────────────────────────────────────────────── */}
-        <section id="prizes-section" className="relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+        <section id="prizes-section" className="relative scroll-mt-24 border-t border-white/5 px-5 py-14 sm:px-8 sm:py-20">
           <div className="mx-auto max-w-7xl">
             <SectionHeading
               index="04"
@@ -796,7 +796,7 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
         </section>
 
         {/* ── FAQ ──────────────────────────────────────────────────────── */}
-        <section id="faq-section" className="pane relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32">
+        <section id="faq-section" className="pane relative scroll-mt-24 border-t border-white/5 px-5 py-14 sm:px-8 sm:py-20">
           <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div className="lg:sticky lg:top-28 lg:self-start">
               <Reveal>
@@ -880,7 +880,7 @@ export function HackathonPage({ onBackToHome, onNavigate }: HackathonPageProps) 
         </section>
 
         {/* ── Closing call to action ───────────────────────────────────── */}
-        <section className="relative overflow-hidden border-t border-white/5 px-5 py-28 sm:px-8 sm:py-40">
+        <section className="relative overflow-hidden border-t border-white/5 px-5 py-16 sm:px-8 sm:py-24">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute -bottom-56 left-1/2 h-[460px] w-[min(1100px,130vw)] -translate-x-1/2 rounded-full bg-flame/[0.12] blur-[170px]"

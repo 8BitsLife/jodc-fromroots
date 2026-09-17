@@ -33,7 +33,7 @@ export function About() {
   const words = SITE.intro.split(" ");
 
   return (
-    <section id="about" className="relative scroll-mt-24 px-5 py-24 sm:px-8 sm:py-32">
+    <section id="about" className="relative scroll-mt-24 px-5 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto max-w-5xl">
         <Reveal>
           <div className="flex items-baseline gap-4">
@@ -44,7 +44,7 @@ export function About() {
 
         <p
           ref={ref}
-          className="mt-8 font-display text-[clamp(1.45rem,3.8vw,2.75rem)] font-medium leading-[1.25] tracking-[-0.035em] text-bone"
+          className="mt-6 font-display text-[clamp(1.45rem,3.8vw,2.75rem)] font-medium leading-[1.25] tracking-[-0.035em] text-bone"
         >
           {words.map((word, i) => {
             const start = i / words.length;
@@ -56,37 +56,6 @@ export function About() {
             );
           })}
         </p>
-
-        <div className="mt-14 grid gap-10 border-t border-white/5 pt-10 md:grid-cols-[1.1fr_1fr]">
-          <Reveal>
-            <p className="text-pretty text-base leading-relaxed text-ash sm:text-lg">
-              {SITE.mission}
-            </p>
-          </Reveal>
-
-          <Reveal delay={0.1}>
-            <ul className="space-y-4">
-              {[
-                ["No gatekeeping", "First-years welcome. Bring a laptop and questions."],
-                ["Real repositories", "We work upstream, not on throwaway demo projects."],
-                ["People over points", "Reviews, pairing and follow-through beat certificates."],
-              ].map(([title, body]) => (
-                <li key={title} className="flex gap-4">
-                  <span
-                    aria-hidden="true"
-                    className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-flame"
-                  />
-                  <div>
-                    <h3 className="text-[0.95rem] font-medium tracking-tight text-bone">
-                      {title}
-                    </h3>
-                    <p className="mt-1 text-sm leading-relaxed text-ash">{body}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </Reveal>
-        </div>
       </div>
     </section>
   );

@@ -7,7 +7,7 @@ export function Programs() {
   return (
     <section
       id="programs"
-      className="relative scroll-mt-24 border-t border-white/5 px-5 py-24 sm:px-8 sm:py-32"
+      className="relative scroll-mt-24 border-t border-white/5 px-5 py-8 sm:px-8 sm:py-12"
     >
       <div className="mx-auto max-w-7xl">
         <SectionHeading

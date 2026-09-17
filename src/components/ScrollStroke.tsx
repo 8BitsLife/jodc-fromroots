@@ -235,7 +235,7 @@ export function ScrollStroke() {
   // section bottom meets the viewport bottom (block fully in view).
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start 0.5", "end 1"],
+    offset: ["start 0.8", "end 0.4"],
   });
 
   // Wheel scrolling arrives in steps; a light spring turns those steps into a
@@ -304,136 +304,159 @@ export function ScrollStroke() {
   const n = windows.glyphs.length;
 
   return (
-    <section
-      ref={sectionRef}
-      aria-labelledby="stroke-heading"
-      className="relative flex min-h-[170vh] w-full flex-col items-center overflow-hidden border-t border-white/5 px-5 pb-6 sm:px-8 sm:pb-8"
-    >
-      {geo && (
-        <svg
-          aria-hidden="true"
-          viewBox={`0 0 ${geo.width} ${geo.height}`}
-          width={geo.width}
-          height={geo.height}
-          preserveAspectRatio="none"
-          className="pointer-events-none absolute left-0 top-0 z-[5] overflow-visible"
-        >
-          <defs>
-            <mask
-              id="stroke-word-mask"
-              maskUnits="userSpaceOnUse"
-              x="0"
-              y="0"
-              width={geo.width}
-              height={geo.height}
-            >
-              {geo.masks.map((d, i) => (
-                <Piece
-                  key={i}
-                  d={d}
-                  progress={progress}
-                  window={windows.glyphs[i]}
-                  strokeWidth={geo.maskPx}
-                  outbound={STROKE_WORD.glyphs[i].outbound}
-                  mask
-                  pathRef={setRef(1 + i)}
-                />
-              ))}
-              {geo.fills.map((d, i) => (
-                <GlyphSeal key={`seal-${i}`} d={d} progress={progress} window={windows.glyphs[i]} />
-              ))}
-            </mask>
-          </defs>
-
-          <g style={{ filter: `drop-shadow(0 0 ${geo.linePx * 2.2}px rgba(255,122,26,0.5))` }}>
-            <Piece
-              d={geo.leadIn}
-              progress={progress}
-              window={windows.leadIn}
-              strokeWidth={geo.linePx}
-              pathRef={setRef(0)}
-            />
-            <Piece
-              d={geo.rowBreak}
-              progress={progress}
-              window={windows.rowBreak}
-              strokeWidth={geo.linePx}
-              pathRef={setRef(1 + n)}
-            />
-            <Piece
-              d={geo.exit}
-              progress={progress}
-              window={windows.exit}
-              strokeWidth={geo.linePx}
-              pathRef={setRef(2 + n)}
-            />
-            <g mask="url(#stroke-word-mask)">
-              {geo.fills.map((d, i) => (
-                <path key={i} d={d} fill={FLAME} />
-              ))}
-            </g>
-          </g>
-
-          <motion.g style={{ opacity: penOpacity }}>
-            <motion.circle cx={penX} cy={penY} r={geo.linePx * 3} fill={FLAME} opacity={0.22} />
-            <motion.circle cx={penX} cy={penY} r={geo.linePx * 1.1} fill="#fff3e6" />
-          </motion.g>
-        </svg>
-      )}
-
-      <div className="relative z-10 mt-28 flex w-fit flex-col items-center gap-6 text-center sm:mt-40">
-        <h2
-          id="stroke-heading"
-          className="text-[clamp(2.6rem,8.2vw,7.4rem)] leading-[0.95] tracking-[-0.045em] text-bone"
-        >
-          Your first line
-          <br />
-          is the hard one.
-          <br />
-          <span ref={anchorRef} className="accent">
-            The rest follow.
-          </span>
-        </h2>
-        <p className="max-w-lg text-pretty text-base leading-relaxed text-ash sm:text-lg">
-          Keep scrolling. The line writes it out the further you go, which is
-          also how contributing works.
-        </p>
-      </div>
-
-      {/* Reserved space the word is fitted into. */}
-      <div
-        ref={slotRef}
-        aria-hidden="true"
-        className="mb-10 mt-12 w-full max-w-4xl sm:mb-16 sm:mt-16"
-        style={{ aspectRatio: `${STROKE_WORD.bbox.w} / ${STROKE_WORD.bbox.h}` }}
-      />
-      <span className="sr-only">Open Source</span>
-
-      <div
-        ref={blockRef}
-        className="relative z-10 mt-auto w-full rounded-[2.5rem] bg-flame pb-8 pt-2 text-ink sm:pb-10"
+    <>
+      <section
+        ref={sectionRef}
+        aria-labelledby="stroke-heading"
+        className="relative hidden md:flex w-full flex-col items-center overflow-hidden border-t border-white/5 px-5 py-8 sm:px-8 sm:py-10"
       >
-        <p
-          ref={markRef}
-          aria-label={SITE.name}
-          className="mt-8 text-center font-display text-[24vw] font-bold leading-[0.85] tracking-[-0.06em] sm:mt-10 lg:text-[17vw]"
-        >
-          {SITE.name}
-        </p>
+        {geo && (
+          <svg
+            aria-hidden="true"
+            viewBox={`0 0 ${geo.width} ${geo.height}`}
+            width={geo.width}
+            height={geo.height}
+            preserveAspectRatio="none"
+            className="pointer-events-none absolute left-0 top-0 z-[5] overflow-visible"
+          >
+            <defs>
+              <mask
+                id="stroke-word-mask"
+                maskUnits="userSpaceOnUse"
+                x="0"
+                y="0"
+                width={geo.width}
+                height={geo.height}
+              >
+                {geo.masks.map((d, i) => (
+                  <Piece
+                    key={i}
+                    d={d}
+                    progress={progress}
+                    window={windows.glyphs[i]}
+                    strokeWidth={geo.maskPx}
+                    outbound={STROKE_WORD.glyphs[i].outbound}
+                    mask
+                    pathRef={setRef(1 + i)}
+                  />
+                ))}
+                {geo.fills.map((d, i) => (
+                  <GlyphSeal key={`seal-${i}`} d={d} progress={progress} window={windows.glyphs[i]} />
+                ))}
+              </mask>
+            </defs>
 
-        <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-8 px-6 font-mono text-[0.7rem] uppercase tracking-[0.16em] sm:px-10 lg:mt-4 lg:grid-cols-4">
-          {META.map(([label, line1, line2]) => (
-            <div key={label}>
-              <dt className="text-ink/60">{label}</dt>
-              <dd className="mt-1.5 font-semibold leading-snug">
-                {line1}
-                <br />
-                {line2}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-    </section>
+            <g style={{ filter: `drop-shadow(0 0 ${geo.linePx * 2}px rgba(255,122,26,0.5))` }}>
+              <Piece
+                d={geo.leadIn}
+                progress={progress}
+                window={windows.leadIn}
+                strokeWidth={geo.linePx}
+                pathRef={setRef(0)}
+              />
+              <Piece
+                d={geo.rowBreak}
+                progress={progress}
+                window={windows.rowBreak}
+                strokeWidth={geo.linePx}
+                pathRef={setRef(1 + n)}
+              />
+              <Piece
+                d={geo.exit}
+                progress={progress}
+                window={windows.exit}
+                strokeWidth={geo.linePx}
+                pathRef={setRef(2 + n)}
+              />
+              <g mask="url(#stroke-word-mask)">
+                {geo.fills.map((d, i) => (
+                  <path key={i} d={d} fill={FLAME} />
+                ))}
+              </g>
+            </g>
+
+            <motion.g style={{ opacity: penOpacity }}>
+              <motion.circle cx={penX} cy={penY} r={geo.linePx * 2.5} fill={FLAME} opacity={0.22} />
+              <motion.circle cx={penX} cy={penY} r={geo.linePx * 1} fill="#fff3e6" />
+            </motion.g>
+          </svg>
+        )}
+
+        <div className="relative z-10 mt-4 flex w-fit flex-col items-center gap-3 text-center sm:mt-6">
+          <h2
+            id="stroke-heading"
+            className="text-[clamp(1.75rem,4vw,3.25rem)] leading-[0.95] tracking-[-0.045em] text-bone"
+          >
+            Your first line
+            <br />
+            is the hard one.
+            <br />
+            <span ref={anchorRef} className="accent">
+              The rest follow.
+            </span>
+          </h2>
+          <p className="max-w-md text-pretty text-xs leading-relaxed text-ash sm:text-sm">
+            Keep scrolling. The line writes it out the further you go, which is
+            also how contributing works.
+          </p>
+        </div>
+
+        {/* Reserved space the word is fitted into. */}
+        <div
+          ref={slotRef}
+          aria-hidden="true"
+          className="my-3 w-full max-w-lg"
+          style={{ aspectRatio: `${STROKE_WORD.bbox.w} / ${STROKE_WORD.bbox.h}` }}
+        />
+        <span className="sr-only">Open Source</span>
+
+        <div
+          ref={blockRef}
+          className="relative z-10 mt-5 w-full rounded-[1.75rem] bg-flame pb-5 pt-2 text-ink sm:mt-6 sm:pb-6"
+        >
+          <p
+            ref={markRef}
+            aria-label={SITE.name}
+            className="mt-4 text-center font-display text-5xl font-bold leading-[0.85] tracking-[-0.05em] sm:text-6xl lg:text-7xl"
+          >
+            {SITE.name}
+          </p>
+
+          <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 px-5 font-mono text-[0.68rem] uppercase tracking-[0.14em] sm:px-8 lg:mt-3 lg:grid-cols-4">
+            {META.map(([label, line1, line2]) => (
+              <div key={label}>
+                <dt className="text-ink/60">{label}</dt>
+                <dd className="mt-1 font-semibold leading-snug">
+                  {line1}
+                  <br />
+                  {line2}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {/* Mobile-only compact view without the tall stroke and scroll lock */}
+      <section className="md:hidden border-t border-white/5 px-4 py-5">
+        <div className="rounded-xl bg-flame p-4 text-ink">
+          <p aria-label={SITE.name} className="text-center font-display text-3xl font-bold tracking-tight">
+            {SITE.name}
+          </p>
+          <dl className="mt-4 grid grid-cols-2 gap-2.5 font-mono text-[0.65rem] uppercase tracking-wider">
+            {META.map(([label, line1, line2]) => (
+              <div key={label}>
+                <dt className="text-ink/60">{label}</dt>
+                <dd className="mt-0.5 font-semibold leading-snug">
+                  {line1}
+                  <br />
+                  {line2}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+    </>
   );
 }

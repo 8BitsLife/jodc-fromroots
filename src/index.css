@@ -310,6 +310,16 @@
   );
 }
 
+/* Glass inside another glass surface (the Home dropdown inside the nav bar).
+   A backdrop-filter nested in one can't see the page behind the outer
+   surface, so the blur never happens and text shows straight through. A
+   near-solid fill gives it the same frosted weight as the bar instead. */
+.glass-nested {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.015)),
+    rgba(13, 13, 17, 0.94);
+}
+
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass { background: rgba(14, 14, 18, 0.94); }
 }
